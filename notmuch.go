@@ -4,7 +4,7 @@
 // one will inform the other. There are some differences, however:
 //
 // * The Go binding arranges for the garbage collector to deal with objects
-//   allocated by notmuch correctly. You should close the database manually,i
+//   allocated by notmuch correctly. You should close the database manually,
 //   but everything else will be garbage collected when it becomes unreachable,
 //   and not before. Objects hold references to their parent objects to make this
 //   go smoothly.
@@ -16,8 +16,8 @@
 //   parent object, rather than stand-alone functions.
 // * Functions which in C return a status code and pass back a value via a pointer
 //   argument now return a (value, error) pair.
-
 package notmuch
+
 // Copyright © 2015 Ian Denhardt <ian@zenhack.net>
 // Licensed under the GPLv3 or later.
 // See COPYING at the root of the repository for details.
@@ -28,17 +28,53 @@ package notmuch
 import "C"
 
 import (
+	"errors"
 	"runtime"
 	"unsafe"
 )
 
 const (
-	DB_RDONLY = C.NOTMUCH_DATABASE_MODE_READ_ONLY
-	DB_RDWR = C.NOTMUCH_DATABASE_MODE_READ_WRITE
+	// DBReadOnly is the mode for opening the database in read only.
+	DBReadOnly = C.NOTMUCH_DATABASE_MODE_READ_ONLY
+
+	// DBReadWrite is the mode for opening the database in read write.
+	DBReadWrite = C.NOTMUCH_DATABASE_MODE_READ_WRITE
 )
 
-type status C.notmuch_status_t
-type DBMode C.notmuch_database_mode_t
+var (
+	// ErrEndOfThreads is returned when there are no more threads to return.
+	ErrEndOfThreads = errors.New("end of threads")
+)
+
+type (
+	// DBMode is the mode of the database opening, DBReadOnly or DBReadWrite
+	DBMode C.notmuch_database_mode_t
+
+	// DB represents a notmuch database.
+	DB struct {
+		cptr unsafe.Pointer
+	}
+
+	// Query represents a notmuch query.
+	Query struct {
+		cptr *C.notmuch_query_t
+		db   *DB
+	}
+
+	// Threads represents notmuch threads.
+	Threads struct {
+		cptr  *C.notmuch_threads_t
+		query *Query
+	}
+
+	// Thread represents a notmuch thread.
+	Thread struct {
+		cptr    *C.notmuch_thread_t
+		threads *Threads
+	}
+
+	status C.notmuch_status_t
+)
 
 // Notmuch returns NULL in several instances on out of memory errors. The
 // expected go behavior is to panic. This function checks that if argument is nil
@@ -52,35 +88,15 @@ func checkOOM(ptr unsafe.Pointer) {
 // Convert a notmuch status to an error. This is almost a simple cast, but
 // we need to return nil if it's a success, rather than NOTMUCH_STATUS_SUCCESS.
 func statusErr(s C.notmuch_status_t) error {
-	if s == C.NOTMUCH_STATUS_SUCCESS {
-		return nil
-	} else {
+	if s != C.NOTMUCH_STATUS_SUCCESS {
 		return status(s)
 	}
+	return nil
 }
 
 func (s status) Error() string {
 	cstr := C.notmuch_status_to_string(C.notmuch_status_t(s))
 	return C.GoString(cstr)
-}
-
-type DB struct {
-	cptr unsafe.Pointer
-}
-
-type Query struct {
-	cptr *C.notmuch_query_t
-	db *DB
-}
-
-type Threads struct {
-	cptr *C.notmuch_threads_t
-	query *Query
-}
-
-type Thread struct {
-	cptr *C.notmuch_thread_t
-	threads *Threads
 }
 
 func (db *DB) toC() *C.notmuch_database_t {
@@ -99,13 +115,15 @@ func (t *Thread) toC() *C.notmuch_thread_t {
 	return (*C.notmuch_thread_t)(t.cptr)
 }
 
+// Open opens the database at the location path using mode. Caller is responsible
+// for closing the database when done.
 func Open(path string, mode DBMode) (*DB, error) {
 	cpath := C.CString(path)
 	defer C.free(unsafe.Pointer(cpath))
 
 	cmode := C.notmuch_database_mode_t(mode)
 
-	db  := &DB{}
+	db := &DB{}
 	cdb := (**C.notmuch_database_t)(unsafe.Pointer(&db.cptr))
 
 	cerr := C.notmuch_database_open(cpath, cmode, cdb)
@@ -114,6 +132,7 @@ func Open(path string, mode DBMode) (*DB, error) {
 	return db, err
 }
 
+// Close closes the database.
 func (db *DB) Close() error {
 	cdb := (*C.notmuch_database_t)(db.cptr)
 	cerr := C.notmuch_database_close(cdb)
@@ -121,13 +140,14 @@ func (db *DB) Close() error {
 	return err
 }
 
-func (db *DB) QueryCreate(queryString string) *Query {
+// NewQuery creates a new query from a string following xapian format.
+func (db *DB) NewQuery(queryString string) *Query {
 	cstr := C.CString(queryString)
 	defer C.free(unsafe.Pointer(cstr))
 	cquery := C.notmuch_query_create(db.toC(), cstr)
 	query := &Query{
 		cptr: cquery,
-		db: db,
+		db:   db,
 	}
 	runtime.SetFinalizer(query, func(q *Query) {
 		C.notmuch_query_destroy(q.toC())
@@ -135,7 +155,8 @@ func (db *DB) QueryCreate(queryString string) *Query {
 	return query
 }
 
-func (q *Query) SearchThreads() (*Threads, error) {
+// Threads returns the threads matching the query.
+func (q *Query) Threads() (*Threads, error) {
 	threads := &Threads{query: q}
 	cthreads := (**C.notmuch_threads_t)(unsafe.Pointer(&threads.cptr))
 	cerr := C.notmuch_query_search_threads_st(q.toC(), cthreads)
@@ -149,32 +170,38 @@ func (q *Query) SearchThreads() (*Threads, error) {
 	return threads, nil
 }
 
-func (t *Threads) Valid() bool {
-	cbool := C.notmuch_threads_valid(t.toC())
-	return int(cbool) != 0
-}
-
-
-func (t *Threads) Get() *Thread {
+// Get fetches the currently selected thread.
+func (t *Threads) Get() (*Thread, error) {
+	if !t.valid() {
+		return nil, ErrEndOfThreads
+	}
 	cthread := C.notmuch_threads_get(t.toC())
-	// NOTE: we don't distinguish between OOM and calling Get when
-	// !t.Valid(). As such, it's an error for the user to call Get
-	// without first calling Valid.
 	checkOOM(unsafe.Pointer(cthread))
 	thread := &Thread{
-		cptr: cthread,
+		cptr:    cthread,
 		threads: t,
 	}
 	runtime.SetFinalizer(thread, func(t *Thread) {
 		C.notmuch_thread_destroy(t.toC())
 	})
-	return thread
+	return thread, nil
 }
 
-func (t *Threads) MoveToNext() {
+// MoveToNext moves the cursor to next thread or returns ErrEndOfThreads if no more threads.
+func (t *Threads) MoveToNext() error {
 	C.notmuch_threads_move_to_next(t.toC())
+	if !t.valid() {
+		return ErrEndOfThreads
+	}
+	return nil
 }
 
+func (t *Threads) valid() bool {
+	cbool := C.notmuch_threads_valid(t.toC())
+	return int(cbool) != 0
+}
+
+// GetSubject returns the subject of a thread.
 func (t *Thread) GetSubject() string {
 	cstr := C.notmuch_thread_get_subject(t.toC())
 	str := C.GoString(cstr)
