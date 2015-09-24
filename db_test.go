@@ -50,3 +50,15 @@ func TestOpen(t *testing.T) {
 		t.Errorf("db.Version(): want at least %d got %d", want, got)
 	}
 }
+
+func TestLastStatus(t *testing.T) {
+	db, err := Open(dbPath, DBReadOnly)
+	if err != nil {
+		t.Fatalf("Open(%q): unexpected error: %s", dbPath, err)
+	}
+	defer db.Close()
+	if want, got := "", db.LastStatus(); want != got {
+		t.Errorf("db.LastStatus(): want %s got %s", want, got)
+	}
+	// TODO(kalbasit): use add_message later to cause an error and add a test for it
+}

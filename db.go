@@ -74,3 +74,8 @@ func (db *DB) Close() error {
 func (db *DB) Version() int {
 	return int(C.notmuch_database_get_version(db.toC()))
 }
+
+// LastStatus retrieves last status string for the notmuch database.
+func (db *DB) LastStatus() string {
+	return C.GoString(C.notmuch_database_status_string(db.toC()))
+}
