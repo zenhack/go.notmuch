@@ -122,6 +122,12 @@ func (db *DB) NeedsUpgrade() bool {
 	return int(cbool) != 0
 }
 
+// Upgrade upgrades the current database to the latest supported version. The
+// database must be opened with DBReadWrite.
+func (db *DB) Upgrade() error {
+	return statusErr(C.notmuch_database_upgrade(db.toC(), nil, nil))
+}
+
 func (db *DB) toC() *C.notmuch_database_t {
 	return (*C.notmuch_database_t)(db.cptr)
 }

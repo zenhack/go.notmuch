@@ -89,3 +89,23 @@ func TestNeedsUpgrade(t *testing.T) {
 		t.Errorf("db.NeedsUpgrade(): want %b got %b", want, got)
 	}
 }
+
+func TestUpgrade(t *testing.T) {
+	db, err := Open(dbPath, DBReadOnly)
+	if err != nil {
+		t.Fatalf("Open(%q): unexpected error: %s", dbPath, err)
+	}
+	defer db.Close()
+	if want, got := ErrReadOnlyDB, db.Upgrade(); want != got {
+		t.Errorf("db.Upgrade(): want error %q got %q", want, got)
+	}
+
+	db, err = Open(dbPath, DBReadWrite)
+	if err != nil {
+		t.Fatalf("Open(%q): unexpected error: %s", dbPath, err)
+	}
+	defer db.Close()
+	if want, got := error(nil), db.Upgrade(); want != got {
+		t.Errorf("db.Upgrade(): want error %q got %q", want, got)
+	}
+}
