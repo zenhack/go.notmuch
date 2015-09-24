@@ -11,7 +11,6 @@ import "C"
 
 // Thread represents a notmuch thread.
 type Thread struct {
-	id      string
 	cptr    *C.notmuch_thread_t
 	threads *Threads
 }
@@ -25,7 +24,7 @@ func (t *Thread) GetSubject() string {
 
 // GetID returns the ID of the thread.
 func (t *Thread) GetID() string {
-	return t.id
+	return C.GoString(C.notmuch_thread_get_thread_id(t.toC()))
 }
 
 func (t *Thread) toC() *C.notmuch_thread_t {

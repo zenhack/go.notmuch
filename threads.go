@@ -40,7 +40,6 @@ func (ts *Threads) get() *Thread {
 	cthread := C.notmuch_threads_get(ts.toC())
 	checkOOM(unsafe.Pointer(cthread))
 	thread := &Thread{
-		id:      C.GoString(C.notmuch_thread_get_thread_id(cthread)),
 		cptr:    cthread,
 		threads: ts,
 	}
