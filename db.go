@@ -5,7 +5,10 @@ package notmuch
 // #include <notmuch.h>
 import "C"
 
-import "unsafe"
+import (
+	"runtime"
+	"unsafe"
+)
 
 const (
 	// DBReadOnly is the mode for opening the database in read only.
@@ -36,14 +39,13 @@ func Open(path string, mode DBMode) (*DB, error) {
 	defer C.free(unsafe.Pointer(cpath))
 
 	cmode := C.notmuch_database_mode_t(mode)
-
 	db := &DB{}
 	cdb := (**C.notmuch_database_t)(unsafe.Pointer(&db.cptr))
-
 	cerr := C.notmuch_database_open(cpath, cmode, cdb)
-
-	err := statusErr(cerr)
-	return db, err
+	runtime.SetFinalizer(db, func(db *DB) {
+		C.notmuch_database_destroy(db.toC())
+	})
+	return db, statusErr(cerr)
 }
 
 // Close closes the database.
