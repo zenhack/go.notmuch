@@ -79,8 +79,7 @@ func (db *DB) NewQuery(queryString string) *Query {
 
 // Close closes the database.
 func (db *DB) Close() error {
-	cdb := (*C.notmuch_database_t)(db.cptr)
-	cerr := C.notmuch_database_close(cdb)
+	cerr := C.notmuch_database_close(db.toC())
 	err := statusErr(cerr)
 	return err
 }
