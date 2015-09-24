@@ -8,6 +8,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -65,4 +66,15 @@ func TestLastStatus(t *testing.T) {
 		t.Errorf("db.LastStatus(): want %s got %s", want, got)
 	}
 	// TODO(kalbasit): use add_message later to cause an error and add a test for it
+}
+
+func TestPath(t *testing.T) {
+	db, err := Open(dbPath, DBReadOnly)
+	if err != nil {
+		t.Fatalf("Open(%q): unexpected error: %s", dbPath, err)
+	}
+	defer db.Close()
+	if want, got := "go.notmuch/fixtures/database-v1", db.Path(); !strings.HasSuffix(got, want) {
+		t.Errorf("db.Path(): want %s got %s", want, got)
+	}
 }

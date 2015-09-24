@@ -95,6 +95,11 @@ func (db *DB) LastStatus() string {
 	return C.GoString(C.notmuch_database_status_string(db.toC()))
 }
 
+// Path returns the database path of the database.
+func (db *DB) Path() string {
+	return C.GoString(C.notmuch_database_get_path(db.toC()))
+}
+
 func (db *DB) toC() *C.notmuch_database_t {
 	return (*C.notmuch_database_t)(db.cptr)
 }
