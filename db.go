@@ -65,6 +65,16 @@ func Open(path string, mode DBMode) (*DB, error) {
 	return db, statusErr(cerr)
 }
 
+// Atomic opens an atomic transaction in the database and calls the callback.
+func (db *DB) Atomic(callback func(*DB)) error {
+	cerr := C.notmuch_database_begin_atomic(db.toC())
+	if err := statusErr(cerr); err != nil {
+		return err
+	}
+	callback(db)
+	return statusErr(C.notmuch_database_end_atomic(db.toC()))
+}
+
 // NewQuery creates a new query from a string following xapian format.
 func (db *DB) NewQuery(queryString string) *Query {
 	cstr := C.CString(queryString)
