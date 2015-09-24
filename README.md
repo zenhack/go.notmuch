@@ -1,5 +1,7 @@
+[![Build
+Status](https://travis-ci.org/zenhack/go.notmuch.svg?branch=master)](https://travis-ci.org/zenhack/go.notmuch)
+
 Go binding for [notmuch mail][1].
-[![Build Status](https://travis-ci.org/zenhack/go.notmuch.svg?branch=master)](https://travis-ci.org/zenhack/go.notmuch)
 
 This is a work in progress. I will probably only add wrappers for
 individual functions as I have need for them for the time being; please
