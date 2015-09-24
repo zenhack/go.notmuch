@@ -20,6 +20,9 @@ const (
 
 	// DBReadWrite is the mode for opening the database in read write.
 	DBReadWrite = C.NOTMUCH_DATABASE_MODE_READ_WRITE
+
+	// TagMax is the maximum number of allowed tags.
+	TagMax = C.NOTMUCH_TAG_MAX
 )
 
 type (
