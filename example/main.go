@@ -33,12 +33,8 @@ func main() {
 	if err != nil {
 		fmt.Println(err)
 	}
-	for {
-		thread, err := threads.Get()
-		if err != nil {
-			break
-		}
+	thread := &notmuch.Thread{}
+	for threads.Next(thread) {
 		fmt.Println(thread.GetSubject())
-		threads.MoveToNext()
 	}
 }

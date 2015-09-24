@@ -28,13 +28,9 @@ func TestSearchThreads(t *testing.T) {
 	}
 
 	var count int
-	for {
-		threads.Get()
+	thread := &Thread{}
+	for threads.Next(thread) {
 		count++
-
-		if err := threads.MoveToNext(); err != nil {
-			break
-		}
 	}
 
 	if want, got := 24, count; want != got {
@@ -55,12 +51,9 @@ func TestGetNoResult(t *testing.T) {
 	}
 
 	var count int
-	for {
-		if _, err := threads.Get(); err != nil {
-			break
-		}
+	thread := &Thread{}
+	for threads.Next(thread) {
 		count++
-		threads.MoveToNext()
 	}
 
 	if want, got := 0, count; want != got {
@@ -79,9 +72,9 @@ func TestGetSubjectUTF8(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error getting the threads: %s", err)
 	}
-	thread, err := threads.Get()
-	if err != nil {
-		t.Errorf("threads.Get(): got error: %s", err)
+	thread := &Thread{}
+	if !threads.Next(thread) {
+		t.Fatalf("threads.Next(thread): unable to fetch the first and only thread")
 	}
 	if want, got := "Essai accentué", thread.GetSubject(); want != got {
 		t.Errorf("db.NewQuery(%q).Threads().Get().GetSubject(): want %s got %s", want, want, got)

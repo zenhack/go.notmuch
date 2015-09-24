@@ -28,7 +28,6 @@ package notmuch
 import "C"
 
 import (
-	"errors"
 	"runtime"
 	"unsafe"
 )
@@ -39,11 +38,6 @@ const (
 
 	// DBReadWrite is the mode for opening the database in read write.
 	DBReadWrite = C.NOTMUCH_DATABASE_MODE_READ_WRITE
-)
-
-var (
-	// ErrEndOfThreads is returned when there are no more threads to return.
-	ErrEndOfThreads = errors.New("end of threads")
 )
 
 type (
@@ -107,8 +101,8 @@ func (q *Query) toC() *C.notmuch_query_t {
 	return (*C.notmuch_query_t)(q.cptr)
 }
 
-func (t *Threads) toC() *C.notmuch_threads_t {
-	return (*C.notmuch_threads_t)(t.cptr)
+func (ts *Threads) toC() *C.notmuch_threads_t {
+	return (*C.notmuch_threads_t)(ts.cptr)
 }
 
 func (t *Thread) toC() *C.notmuch_thread_t {
@@ -170,34 +164,33 @@ func (q *Query) Threads() (*Threads, error) {
 	return threads, nil
 }
 
-// Get fetches the currently selected thread.
-func (t *Threads) Get() (*Thread, error) {
-	if !t.valid() {
-		return nil, ErrEndOfThreads
+// Next retrieves the next thread from the result set. Next returns true if a thread
+// was successfully retrieved.
+func (ts *Threads) Next(t *Thread) bool {
+	if !ts.valid() {
+		return false
 	}
-	cthread := C.notmuch_threads_get(t.toC())
+	*t = *ts.get()
+	C.notmuch_threads_move_to_next(ts.toC())
+	return true
+}
+
+// Get fetches the currently selected thread.
+func (ts *Threads) get() *Thread {
+	cthread := C.notmuch_threads_get(ts.toC())
 	checkOOM(unsafe.Pointer(cthread))
 	thread := &Thread{
 		cptr:    cthread,
-		threads: t,
+		threads: ts,
 	}
 	runtime.SetFinalizer(thread, func(t *Thread) {
 		C.notmuch_thread_destroy(t.toC())
 	})
-	return thread, nil
+	return thread
 }
 
-// MoveToNext moves the cursor to next thread or returns ErrEndOfThreads if no more threads.
-func (t *Threads) MoveToNext() error {
-	C.notmuch_threads_move_to_next(t.toC())
-	if !t.valid() {
-		return ErrEndOfThreads
-	}
-	return nil
-}
-
-func (t *Threads) valid() bool {
-	cbool := C.notmuch_threads_valid(t.toC())
+func (ts *Threads) valid() bool {
+	cbool := C.notmuch_threads_valid(ts.toC())
 	return int(cbool) != 0
 }
 
