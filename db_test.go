@@ -1,6 +1,8 @@
 package notmuch
 
 import (
+	"os"
+	"path"
 	"path/filepath"
 	"testing"
 )
@@ -19,6 +21,22 @@ func TestOpenNotFound(t *testing.T) {
 	_, err := Open("/not-found", DBReadOnly)
 	if err == nil {
 		t.Errorf("Open(%q): expected error got nil", "/not-found")
+	}
+}
+
+func TestCreate(t *testing.T) {
+	tmp := os.TempDir()
+	tmpDbPath := path.Join(tmp, ".notmuch")
+	defer func() {
+		os.RemoveAll(tmpDbPath)
+	}()
+
+	db, err := Create(tmp)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if want, got := 1, db.Version(); got < want {
+		t.Errorf("db.Version(): want at least %d got %d", want, got)
 	}
 }
 

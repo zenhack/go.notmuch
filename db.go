@@ -32,6 +32,20 @@ func (db *DB) toC() *C.notmuch_database_t {
 	return (*C.notmuch_database_t)(db.cptr)
 }
 
+// Create creates a new, empty notmuch database located at 'path'.
+func Create(path string) (*DB, error) {
+	cpath := C.CString(path)
+	defer C.free(unsafe.Pointer(cpath))
+
+	db := &DB{}
+	cdb := (**C.notmuch_database_t)(unsafe.Pointer(&db.cptr))
+	cerr := C.notmuch_database_create(cpath, cdb)
+	runtime.SetFinalizer(db, func(db *DB) {
+		C.notmuch_database_destroy(db.toC())
+	})
+	return db, statusErr(cerr)
+}
+
 // Open opens the database at the location path using mode. Caller is responsible
 // for closing the database when done.
 func Open(path string, mode DBMode) (*DB, error) {
