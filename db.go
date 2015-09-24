@@ -32,10 +32,6 @@ type (
 	}
 )
 
-func (db *DB) toC() *C.notmuch_database_t {
-	return (*C.notmuch_database_t)(db.cptr)
-}
-
 // Create creates a new, empty notmuch database located at 'path'.
 func Create(path string) (*DB, error) {
 	cpath := C.CString(path)
@@ -66,6 +62,21 @@ func Open(path string, mode DBMode) (*DB, error) {
 	return db, statusErr(cerr)
 }
 
+// NewQuery creates a new query from a string following xapian format.
+func (db *DB) NewQuery(queryString string) *Query {
+	cstr := C.CString(queryString)
+	defer C.free(unsafe.Pointer(cstr))
+	cquery := C.notmuch_query_create(db.toC(), cstr)
+	query := &Query{
+		cptr: cquery,
+		db:   db,
+	}
+	runtime.SetFinalizer(query, func(q *Query) {
+		C.notmuch_query_destroy(q.toC())
+	})
+	return query
+}
+
 // Close closes the database.
 func (db *DB) Close() error {
 	cdb := (*C.notmuch_database_t)(db.cptr)
@@ -82,4 +93,8 @@ func (db *DB) Version() int {
 // LastStatus retrieves last status string for the notmuch database.
 func (db *DB) LastStatus() string {
 	return C.GoString(C.notmuch_database_status_string(db.toC()))
+}
+
+func (db *DB) toC() *C.notmuch_database_t {
+	return (*C.notmuch_database_t)(db.cptr)
 }

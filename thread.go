@@ -9,20 +9,12 @@ package notmuch
 // #include <notmuch.h>
 import "C"
 
-type (
-	// Thread represents a notmuch thread.
-	Thread struct {
-		id      string
-		cptr    *C.notmuch_thread_t
-		threads *Threads
-	}
-
-	// Messages represents notmuch messages.
-	Messages struct {
-		cptr   *C.notmuch_messages_t
-		thread *Thread
-	}
-)
+// Thread represents a notmuch thread.
+type Thread struct {
+	id      string
+	cptr    *C.notmuch_thread_t
+	threads *Threads
+}
 
 // GetSubject returns the subject of a thread.
 func (t *Thread) GetSubject() string {
