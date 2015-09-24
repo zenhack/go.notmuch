@@ -17,3 +17,7 @@
 // * Functions which in C return a status code and pass back a value via a pointer
 //   argument now return a (value, error) pair.
 package notmuch
+
+// Copyright © 2015 The go.bindings Authors. Authors can be found in the AUTHORS file.
+// Licensed under the GPLv3 or later.
+// See COPYING at the root of the repository for details.
