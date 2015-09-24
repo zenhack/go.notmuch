@@ -100,6 +100,16 @@ func (db *DB) Path() string {
 	return C.GoString(C.notmuch_database_get_path(db.toC()))
 }
 
+// NeedsUpgrade returns true if the database can be upgraded. This will always
+// return false if the database was opened with DBReadOnly.
+//
+// If this function returns true then the caller may call
+// Upgrade() to upgrade the database.
+func (db *DB) NeedsUpgrade() bool {
+	cbool := C.notmuch_database_needs_upgrade(db.toC())
+	return int(cbool) != 0
+}
+
 func (db *DB) toC() *C.notmuch_database_t {
 	return (*C.notmuch_database_t)(db.cptr)
 }

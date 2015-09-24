@@ -78,3 +78,14 @@ func TestPath(t *testing.T) {
 		t.Errorf("db.Path(): want %s got %s", want, got)
 	}
 }
+
+func TestNeedsUpgrade(t *testing.T) {
+	db, err := Open(dbPath, DBReadOnly)
+	if err != nil {
+		t.Fatalf("Open(%q): unexpected error: %s", dbPath, err)
+	}
+	defer db.Close()
+	if want, got := false, db.NeedsUpgrade(); want != got {
+		t.Errorf("db.NeedsUpgrade(): want %b got %b", want, got)
+	}
+}
