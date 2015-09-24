@@ -10,6 +10,20 @@ import (
 	"unsafe"
 )
 
+type (
+	// Query represents a notmuch query.
+	Query struct {
+		cptr *C.notmuch_query_t
+		db   *DB
+	}
+
+	// Threads represents notmuch threads.
+	Threads struct {
+		cptr  *C.notmuch_threads_t
+		query *Query
+	}
+)
+
 // NewQuery creates a new query from a string following xapian format.
 func (db *DB) NewQuery(queryString string) *Query {
 	cstr := C.CString(queryString)
@@ -50,10 +64,6 @@ func (q *Query) CountMessages() int {
 	return int(C.notmuch_query_count_messages(q.toC()))
 }
 
-func (q *Query) toC() *C.notmuch_query_t {
-	return (*C.notmuch_query_t)(q.cptr)
-}
-
 // Next retrieves the next thread from the result set. Next returns true if a thread
 // was successfully retrieved.
 func (ts *Threads) Next(t *Thread) bool {
@@ -63,6 +73,14 @@ func (ts *Threads) Next(t *Thread) bool {
 	*t = *ts.get()
 	C.notmuch_threads_move_to_next(ts.toC())
 	return true
+}
+
+func (q *Query) toC() *C.notmuch_query_t {
+	return (*C.notmuch_query_t)(q.cptr)
+}
+
+func (ts *Threads) toC() *C.notmuch_threads_t {
+	return (*C.notmuch_threads_t)(ts.cptr)
 }
 
 // Get fetches the currently selected thread.
