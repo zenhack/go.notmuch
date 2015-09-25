@@ -73,7 +73,7 @@ var (
 // and if so, panics with an out-of-memory message.
 func checkOOM(ptr unsafe.Pointer) {
 	if ptr == nil {
-		panic("Notmuch reported an out of memory error!")
+		panic(ErrOutOfMemory)
 	}
 }
 
