@@ -8,6 +8,7 @@ package notmuch
 // #include <stdlib.h>
 // #include <notmuch.h>
 import "C"
+import "strings"
 
 // Thread represents a notmuch thread.
 type Thread struct {
@@ -54,4 +55,27 @@ func (t *Thread) Messages() *Messages {
 		thread: t,
 		cptr:   C.notmuch_thread_get_messages(t.cptr),
 	}
+}
+
+// Authors returns the list of authors, the first are the authors that matched
+// the query whilst the second return are the rest of the authors. All authors
+// are ordered by date.
+func (t *Thread) Authors() ([]string, []string) {
+	var matched, unmatched []string
+
+	as := C.GoString(C.notmuch_thread_get_authors(t.cptr))
+	munm := strings.Split(as, "|")
+	if len(munm) > 1 {
+		matched = strings.Split(munm[0], ",")
+		unmatched = strings.Split(munm[1], ",")
+	} else {
+		unmatched = strings.Split(munm[0], ",")
+	}
+	for i, s := range matched {
+		matched[i] = strings.Trim(s, " ")
+	}
+	for i, s := range unmatched {
+		unmatched[i] = strings.Trim(s, " ")
+	}
+	return matched, unmatched
 }

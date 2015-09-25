@@ -4,7 +4,10 @@ package notmuch
 // Licensed under the GPLv3 or later.
 // See COPYING at the root of the repository for details.
 
-import "testing"
+import (
+	"reflect"
+	"testing"
+)
 
 func TestGetThreadID(t *testing.T) {
 	db, err := Open(dbPath, DBReadOnly)
@@ -127,5 +130,57 @@ func TestMessages(t *testing.T) {
 	}
 	if want, got := 3, count; want != got {
 		t.Errorf("db.NewQuery(%q).Threads()[0].Messages(): want %d got %d", qs, want, got)
+	}
+}
+
+func TestAuthors(t *testing.T) {
+	tests := map[string][]struct {
+		matched   []string
+		unmatched []string
+	}{
+		"subject:\"Introducing myself\"": {
+			0: {
+				unmatched: []string{"Adrian Perez de Castro", "Keith Packard", "Carl Worth"},
+			},
+		},
+
+		"from:Jan": {
+			0: {
+				unmatched: []string{"Jan Janak"},
+			},
+
+			1: {
+				matched:   []string{"Jan Janak"},
+				unmatched: []string{"Carl Worth"},
+			},
+
+			2: {
+				matched:   []string{"Jan Janak"},
+				unmatched: []string{"Carl Worth"},
+			},
+		},
+	}
+
+	db, err := Open(dbPath, DBReadOnly)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	for q, ress := range tests {
+		threads, err := db.NewQuery(q).Threads()
+		if err != nil {
+			t.Fatalf("error getting the threads: %s", err)
+		}
+		thread := &Thread{}
+		for i := 0; threads.Next(thread); i++ {
+			matched, unmatched := thread.Authors()
+			if want, got := ress[i].matched, matched; !reflect.DeepEqual(want, got) {
+				t.Errorf("thread.Authors() matched: want %v got %v", want, got)
+			}
+			if want, got := ress[i].unmatched, unmatched; !reflect.DeepEqual(want, got) {
+				t.Errorf("thread.Authors() unmatched: want %v got %v", want, got)
+			}
+		}
 	}
 }
