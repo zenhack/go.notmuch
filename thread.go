@@ -8,7 +8,10 @@ package notmuch
 // #include <stdlib.h>
 // #include <notmuch.h>
 import "C"
-import "strings"
+import (
+	"strings"
+	"time"
+)
 
 // Thread represents a notmuch thread.
 type Thread struct {
@@ -78,4 +81,16 @@ func (t *Thread) Authors() ([]string, []string) {
 		unmatched[i] = strings.Trim(s, " ")
 	}
 	return matched, unmatched
+}
+
+// OldestDate returns the date of the oldest message in the thread.
+func (t *Thread) OldestDate() time.Time {
+	ctime := C.notmuch_thread_get_oldest_date(t.cptr)
+	return time.Unix(int64(ctime), 0)
+}
+
+// NewestDate returns the date of the oldest message in the thread.
+func (t *Thread) NewestDate() time.Time {
+	ctime := C.notmuch_thread_get_newest_date(t.cptr)
+	return time.Unix(int64(ctime), 0)
 }

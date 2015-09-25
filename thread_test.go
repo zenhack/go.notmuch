@@ -7,6 +7,7 @@ package notmuch
 import (
 	"reflect"
 	"testing"
+	"time"
 )
 
 func TestGetThreadID(t *testing.T) {
@@ -182,5 +183,47 @@ func TestAuthors(t *testing.T) {
 				t.Errorf("thread.Authors() unmatched: want %v got %v", want, got)
 			}
 		}
+	}
+}
+
+func TestOldestDate(t *testing.T) {
+	db, err := Open(dbPath, DBReadOnly)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	qs := "subject:\"Introducing myself\""
+	threads, err := db.NewQuery(qs).Threads()
+	if err != nil {
+		t.Fatalf("error getting the threads: %s", err)
+	}
+	thread := &Thread{}
+	if !threads.Next(thread) {
+		t.Fatalf("threads.Next(thread): unable to fetch the first and only thread")
+	}
+	if want, got := time.Unix(1258500059, 0), thread.OldestDate(); want.Unix() != got.Unix() {
+		t.Errorf("thread.OldestDate(): want %s got %s", want, got)
+	}
+}
+
+func TestNewestDate(t *testing.T) {
+	db, err := Open(dbPath, DBReadOnly)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	qs := "subject:\"Introducing myself\""
+	threads, err := db.NewQuery(qs).Threads()
+	if err != nil {
+		t.Fatalf("error getting the threads: %s", err)
+	}
+	thread := &Thread{}
+	if !threads.Next(thread) {
+		t.Fatalf("threads.Next(thread): unable to fetch the first and only thread")
+	}
+	if want, got := time.Unix(1258542931, 0), thread.NewestDate(); want.Unix() != got.Unix() {
+		t.Errorf("thread.NewestDate(): want %s got %s", want, got)
 	}
 }
