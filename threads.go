@@ -27,29 +27,25 @@ func (ts *Threads) Next(t *Thread) bool {
 		return false
 	}
 	*t = *ts.get()
-	C.notmuch_threads_move_to_next(ts.toC())
+	C.notmuch_threads_move_to_next(ts.cptr)
 	return true
-}
-
-func (ts *Threads) toC() *C.notmuch_threads_t {
-	return (*C.notmuch_threads_t)(ts.cptr)
 }
 
 // Get fetches the currently selected thread.
 func (ts *Threads) get() *Thread {
-	cthread := C.notmuch_threads_get(ts.toC())
+	cthread := C.notmuch_threads_get(ts.cptr)
 	checkOOM(unsafe.Pointer(cthread))
 	thread := &Thread{
 		cptr:    cthread,
 		threads: ts,
 	}
 	runtime.SetFinalizer(thread, func(t *Thread) {
-		C.notmuch_thread_destroy(t.toC())
+		C.notmuch_thread_destroy(t.cptr)
 	})
 	return thread
 }
 
 func (ts *Threads) valid() bool {
-	cbool := C.notmuch_threads_valid(ts.toC())
+	cbool := C.notmuch_threads_valid(ts.cptr)
 	return int(cbool) != 0
 }

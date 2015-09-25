@@ -24,27 +24,23 @@ type Query struct {
 func (q *Query) Threads() (*Threads, error) {
 	threads := &Threads{query: q}
 	cthreads := (**C.notmuch_threads_t)(unsafe.Pointer(&threads.cptr))
-	cerr := C.notmuch_query_search_threads_st(q.toC(), cthreads)
+	cerr := C.notmuch_query_search_threads_st(q.cptr, cthreads)
 	err := statusErr(cerr)
 	if err != nil {
 		return nil, err
 	}
 	runtime.SetFinalizer(threads, func(t *Threads) {
-		C.notmuch_threads_destroy(t.toC())
+		C.notmuch_threads_destroy(t.cptr)
 	})
 	return threads, nil
 }
 
 // CountThreads returns the number of messages for the current query.
 func (q *Query) CountThreads() int {
-	return int(C.notmuch_query_count_threads(q.toC()))
+	return int(C.notmuch_query_count_threads(q.cptr))
 }
 
 // CountMessages returns the number of messages for the current query.
 func (q *Query) CountMessages() int {
-	return int(C.notmuch_query_count_messages(q.toC()))
-}
-
-func (q *Query) toC() *C.notmuch_query_t {
-	return (*C.notmuch_query_t)(q.cptr)
+	return int(C.notmuch_query_count_messages(q.cptr))
 }

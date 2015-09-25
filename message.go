@@ -15,7 +15,3 @@ type Message struct {
 	messages *Messages
 	thread   *Thread
 }
-
-func (m *Message) toC() *C.notmuch_message_t {
-	return (*C.notmuch_message_t)(m.cptr)
-}

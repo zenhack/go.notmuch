@@ -31,7 +31,7 @@ type (
 
 	// DB represents a notmuch database.
 	DB struct {
-		cptr unsafe.Pointer
+		cptr *C.notmuch_database_t
 	}
 )
 
@@ -44,7 +44,7 @@ func Create(path string) (*DB, error) {
 	cdb := (**C.notmuch_database_t)(unsafe.Pointer(&db.cptr))
 	cerr := C.notmuch_database_create(cpath, cdb)
 	runtime.SetFinalizer(db, func(db *DB) {
-		C.notmuch_database_destroy(db.toC())
+		C.notmuch_database_destroy(db.cptr)
 	})
 	return db, statusErr(cerr)
 }
@@ -60,56 +60,56 @@ func Open(path string, mode DBMode) (*DB, error) {
 	cdb := (**C.notmuch_database_t)(unsafe.Pointer(&db.cptr))
 	cerr := C.notmuch_database_open(cpath, cmode, cdb)
 	runtime.SetFinalizer(db, func(db *DB) {
-		C.notmuch_database_destroy(db.toC())
+		C.notmuch_database_destroy(db.cptr)
 	})
 	return db, statusErr(cerr)
 }
 
 // Atomic opens an atomic transaction in the database and calls the callback.
 func (db *DB) Atomic(callback func(*DB)) error {
-	cerr := C.notmuch_database_begin_atomic(db.toC())
+	cerr := C.notmuch_database_begin_atomic(db.cptr)
 	if err := statusErr(cerr); err != nil {
 		return err
 	}
 	callback(db)
-	return statusErr(C.notmuch_database_end_atomic(db.toC()))
+	return statusErr(C.notmuch_database_end_atomic(db.cptr))
 }
 
 // NewQuery creates a new query from a string following xapian format.
 func (db *DB) NewQuery(queryString string) *Query {
 	cstr := C.CString(queryString)
 	defer C.free(unsafe.Pointer(cstr))
-	cquery := C.notmuch_query_create(db.toC(), cstr)
+	cquery := C.notmuch_query_create(db.cptr, cstr)
 	query := &Query{
 		cptr: cquery,
 		db:   db,
 	}
 	runtime.SetFinalizer(query, func(q *Query) {
-		C.notmuch_query_destroy(q.toC())
+		C.notmuch_query_destroy(q.cptr)
 	})
 	return query
 }
 
 // Close closes the database.
 func (db *DB) Close() error {
-	cerr := C.notmuch_database_close(db.toC())
+	cerr := C.notmuch_database_close(db.cptr)
 	err := statusErr(cerr)
 	return err
 }
 
 // Version returns the database version.
 func (db *DB) Version() int {
-	return int(C.notmuch_database_get_version(db.toC()))
+	return int(C.notmuch_database_get_version(db.cptr))
 }
 
 // LastStatus retrieves last status string for the notmuch database.
 func (db *DB) LastStatus() string {
-	return C.GoString(C.notmuch_database_status_string(db.toC()))
+	return C.GoString(C.notmuch_database_status_string(db.cptr))
 }
 
 // Path returns the database path of the database.
 func (db *DB) Path() string {
-	return C.GoString(C.notmuch_database_get_path(db.toC()))
+	return C.GoString(C.notmuch_database_get_path(db.cptr))
 }
 
 // NeedsUpgrade returns true if the database can be upgraded. This will always
@@ -118,14 +118,14 @@ func (db *DB) Path() string {
 // If this function returns true then the caller may call
 // Upgrade() to upgrade the database.
 func (db *DB) NeedsUpgrade() bool {
-	cbool := C.notmuch_database_needs_upgrade(db.toC())
+	cbool := C.notmuch_database_needs_upgrade(db.cptr)
 	return int(cbool) != 0
 }
 
 // Upgrade upgrades the current database to the latest supported version. The
 // database must be opened with DBReadWrite.
 func (db *DB) Upgrade() error {
-	return statusErr(C.notmuch_database_upgrade(db.toC(), nil, nil))
+	return statusErr(C.notmuch_database_upgrade(db.cptr, nil, nil))
 }
 
 // AddMessage adds a new message to the current database or associate an
@@ -136,11 +136,11 @@ func (db *DB) AddMessage(filename string) (*Message, error) {
 
 	msg := &Message{}
 	cmsg := (**C.notmuch_message_t)(unsafe.Pointer(&msg.cptr))
-	if err := statusErr(C.notmuch_database_add_message(db.toC(), cfilename, cmsg)); err != nil {
+	if err := statusErr(C.notmuch_database_add_message(db.cptr, cfilename, cmsg)); err != nil {
 		return nil, err
 	}
 	runtime.SetFinalizer(msg, func(m *Message) {
-		C.notmuch_message_destroy(m.toC())
+		C.notmuch_message_destroy(m.cptr)
 	})
 	return msg, nil
 }
@@ -151,9 +151,5 @@ func (db *DB) RemoveMessage(filename string) error {
 	cfilename := C.CString(filename)
 	defer C.free(unsafe.Pointer(cfilename))
 
-	return statusErr(C.notmuch_database_remove_message(db.toC(), cfilename))
-}
-
-func (db *DB) toC() *C.notmuch_database_t {
-	return (*C.notmuch_database_t)(db.cptr)
+	return statusErr(C.notmuch_database_remove_message(db.cptr, cfilename))
 }
