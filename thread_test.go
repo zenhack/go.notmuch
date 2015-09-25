@@ -69,3 +69,63 @@ func TestGetSubjectUTF8(t *testing.T) {
 		t.Errorf("db.NewQuery(%q).Threads().Get().GetSubject(): want %s got %s", want, want, got)
 	}
 }
+
+func TestTopLevelMessages(t *testing.T) {
+	db, err := Open(dbPath, DBReadOnly)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	qs := "subject:\"Introducing myself\""
+	threads, err := db.NewQuery(qs).Threads()
+	if err != nil {
+		t.Fatalf("error getting the threads: %s", err)
+	}
+	thread := &Thread{}
+	if !threads.Next(thread) {
+		t.Fatalf("threads.Next(thread): unable to fetch the first and only thread")
+	}
+	msgs := thread.TopLevelMessages()
+	if want, got := thread.cptr, msgs.thread.cptr; want != got {
+		t.Errorf("thread.Message().thread: want %s got %s", want, got)
+	}
+	message := &Message{}
+	var count int
+	for msgs.Next(message) {
+		count++
+	}
+	if want, got := 1, count; want != got {
+		t.Errorf("db.NewQuery(%q).Threads()[0].TopLevelMessages(): want %d got %d", qs, want, got)
+	}
+}
+
+func TestMessages(t *testing.T) {
+	db, err := Open(dbPath, DBReadOnly)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	qs := "subject:\"Introducing myself\""
+	threads, err := db.NewQuery(qs).Threads()
+	if err != nil {
+		t.Fatalf("error getting the threads: %s", err)
+	}
+	thread := &Thread{}
+	if !threads.Next(thread) {
+		t.Fatalf("threads.Next(thread): unable to fetch the first and only thread")
+	}
+	msgs := thread.Messages()
+	if want, got := thread.cptr, msgs.thread.cptr; want != got {
+		t.Errorf("thread.Message().thread: want %s got %s", want, got)
+	}
+	message := &Message{}
+	var count int
+	for msgs.Next(message) {
+		count++
+	}
+	if want, got := 3, count; want != got {
+		t.Errorf("db.NewQuery(%q).Threads()[0].Messages(): want %d got %d", qs, want, got)
+	}
+}

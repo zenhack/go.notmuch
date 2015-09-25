@@ -37,3 +37,21 @@ func (t *Thread) Count() int {
 func (t *Thread) CountMatched() int {
 	return int(C.notmuch_thread_get_matched_messages(t.cptr))
 }
+
+// TopLevelMessages returns an iterator for the top-level messages in the
+// current thread in oldest-first order.
+func (t *Thread) TopLevelMessages() *Messages {
+	return &Messages{
+		thread: t,
+		cptr:   C.notmuch_thread_get_toplevel_messages(t.cptr),
+	}
+}
+
+// Messages returns an iterator for all messages in the current thread in
+// oldest-first order.
+func (t *Thread) Messages() *Messages {
+	return &Messages{
+		thread: t,
+		cptr:   C.notmuch_thread_get_messages(t.cptr),
+	}
+}
