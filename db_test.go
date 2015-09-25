@@ -5,6 +5,7 @@ package notmuch
 // See COPYING at the root of the repository for details.
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"path"
@@ -160,6 +161,30 @@ func TestFindMessage(t *testing.T) {
 	if _, err := db.FindMessage("notfound"); err != ErrNotFound {
 		t.Errorf("db.FindMessage(\"notfound\"): expecting ErrNotFound got %s", err)
 	}
+	id := "87iqd9rn3l.fsf@vertex.dottedmag"
+	msg, err := db.FindMessage(id)
+	if err != nil {
+		t.Fatalf("db.FindMessage(%q): unexpected error: %s", id, err)
+	}
+	if want, got := id, msg.GetID(); want != got {
+		t.Errorf("db.FindMessage(%q).GetID(): want %s got %s", id, want, got)
+	}
+}
+
+func TestCompact(t *testing.T) {
+	backup := fmt.Sprintf("%s.backup", dbPath)
+	defer os.RemoveAll(backup)
+	if err := Compact(dbPath, backup); err != nil {
+		t.Fatalf("error compacting %q: %s", dbPath, err)
+	}
+
+	db, err := Open(dbPath, DBReadOnly)
+	if err != nil {
+		t.Fatalf("Open(%q): unexpected error: %s", dbPath, err)
+	}
+	defer db.Close()
+
+	// same test as TestFindMessage to ensure the database integrity.
 	id := "87iqd9rn3l.fsf@vertex.dottedmag"
 	msg, err := db.FindMessage(id)
 	if err != nil {

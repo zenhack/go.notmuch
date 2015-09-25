@@ -65,6 +65,20 @@ func Open(path string, mode DBMode) (*DB, error) {
 	return db, statusErr(cerr)
 }
 
+// Compact compacts a notmuch database, backing up the original database to the
+// given path. The database will be opened with DBReadWrite to ensure no writes
+// are made.
+func Compact(path, backup string) error {
+	cpath := C.CString(path)
+	cbackup := C.CString(backup)
+	defer func() {
+		C.free(unsafe.Pointer(cpath))
+		C.free(unsafe.Pointer(cbackup))
+	}()
+
+	return statusErr(C.notmuch_database_compact(cpath, cbackup, nil, nil))
+}
+
 // Atomic opens an atomic transaction in the database and calls the callback.
 func (db *DB) Atomic(callback func(*DB)) error {
 	cerr := C.notmuch_database_begin_atomic(db.cptr)
