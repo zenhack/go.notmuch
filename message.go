@@ -15,3 +15,8 @@ type Message struct {
 	messages *Messages
 	thread   *Thread
 }
+
+// GetID returns the message ID.
+func (m *Message) GetID() string {
+	return C.GoString(C.notmuch_message_get_message_id(m.cptr))
+}

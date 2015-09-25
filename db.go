@@ -153,3 +153,41 @@ func (db *DB) RemoveMessage(filename string) error {
 
 	return statusErr(C.notmuch_database_remove_message(db.cptr, cfilename))
 }
+
+// FindMessage finds a message with the given message_id.
+func (db *DB) FindMessage(id string) (*Message, error) {
+	cid := C.CString(id)
+	defer C.free(unsafe.Pointer(cid))
+
+	msg := &Message{}
+	cmsg := (**C.notmuch_message_t)(unsafe.Pointer(&msg.cptr))
+	if err := statusErr(C.notmuch_database_find_message(db.cptr, cid, cmsg)); err != nil {
+		return nil, err
+	}
+	if msg.cptr == nil {
+		return nil, ErrNotFound
+	}
+	runtime.SetFinalizer(msg, func(m *Message) {
+		C.notmuch_message_destroy(m.cptr)
+	})
+	return msg, nil
+}
+
+// FindMessageByFilename finds a message with the given filename.
+func (db *DB) FindMessageByFilename(filename string) (*Message, error) {
+	cfilename := C.CString(filename)
+	defer C.free(unsafe.Pointer(cfilename))
+
+	msg := &Message{}
+	cmsg := (**C.notmuch_message_t)(unsafe.Pointer(&msg.cptr))
+	if err := statusErr(C.notmuch_database_find_message_by_filename(db.cptr, cfilename, cmsg)); err != nil {
+		return nil, err
+	}
+	if msg.cptr == nil {
+		return nil, ErrNotFound
+	}
+	runtime.SetFinalizer(msg, func(m *Message) {
+		C.notmuch_message_destroy(m.cptr)
+	})
+	return msg, nil
+}

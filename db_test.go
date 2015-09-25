@@ -150,3 +150,42 @@ func TestAddMessage(t *testing.T) {
 		t.Errorf("expecting msg to not be nil")
 	}
 }
+
+func TestFindMessage(t *testing.T) {
+	db, err := Open(dbPath, DBReadOnly)
+	if err != nil {
+		t.Fatalf("Open(%q): unexpected error: %s", dbPath, err)
+	}
+	defer db.Close()
+	if _, err := db.FindMessage("notfound"); err != ErrNotFound {
+		t.Errorf("db.FindMessage(\"notfound\"): expecting ErrNotFound got %s", err)
+	}
+	id := "87iqd9rn3l.fsf@vertex.dottedmag"
+	msg, err := db.FindMessage(id)
+	if err != nil {
+		t.Fatalf("db.FindMessage(%q): unexpected error: %s", id, err)
+	}
+	if want, got := id, msg.GetID(); want != got {
+		t.Errorf("db.FindMessage(%q).GetID(): want %s got %s", id, want, got)
+	}
+}
+
+func TestFindMessageByFilename(t *testing.T) {
+	db, err := Open(dbPath, DBReadOnly)
+	if err != nil {
+		t.Fatalf("Open(%q): unexpected error: %s", dbPath, err)
+	}
+	defer db.Close()
+	if _, err := db.FindMessageByFilename("notfound"); err != ErrNotFound {
+		t.Errorf("db.FindMessageByFilename(\"notfound\"): expecting ErrNotFound got %s", err)
+	}
+	id := "87iqd9rn3l.fsf@vertex.dottedmag"
+	p := path.Join(dbPath, "new", "04:2,")
+	msg, err := db.FindMessageByFilename(p)
+	if err != nil {
+		t.Fatalf("db.FindMessageByFilename(%q): unexpected error: %s", p, err)
+	}
+	if want, got := id, msg.GetID(); want != got {
+		t.Errorf("db.FindMessageByFilename(%q).GetID(): want %s got %s", p, want, got)
+	}
+}
