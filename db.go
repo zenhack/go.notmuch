@@ -128,6 +128,32 @@ func (db *DB) Upgrade() error {
 	return statusErr(C.notmuch_database_upgrade(db.toC(), nil, nil))
 }
 
+// AddMessage adds a new message to the current database or associate an
+// additional filename with an existing message.
+func (db *DB) AddMessage(filename string) (*Message, error) {
+	cfilename := C.CString(filename)
+	defer C.free(unsafe.Pointer(cfilename))
+
+	msg := &Message{}
+	cmsg := (**C.notmuch_message_t)(unsafe.Pointer(&msg.cptr))
+	if err := statusErr(C.notmuch_database_add_message(db.toC(), cfilename, cmsg)); err != nil {
+		return nil, err
+	}
+	runtime.SetFinalizer(msg, func(m *Message) {
+		C.notmuch_message_destroy(m.toC())
+	})
+	return msg, nil
+}
+
+// RemoveMessage remove a message filename from the current database. If the
+// message has no more filenames, remove the message.
+func (db *DB) RemoveMessage(filename string) error {
+	cfilename := C.CString(filename)
+	defer C.free(unsafe.Pointer(cfilename))
+
+	return statusErr(C.notmuch_database_remove_message(db.toC(), cfilename))
+}
+
 func (db *DB) toC() *C.notmuch_database_t {
 	return (*C.notmuch_database_t)(db.cptr)
 }

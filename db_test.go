@@ -5,6 +5,7 @@ package notmuch
 // See COPYING at the root of the repository for details.
 
 import (
+	"io"
 	"os"
 	"path"
 	"path/filepath"
@@ -107,5 +108,45 @@ func TestUpgrade(t *testing.T) {
 	defer db.Close()
 	if want, got := error(nil), db.Upgrade(); want != got {
 		t.Errorf("db.Upgrade(): want error %q got %q", want, got)
+	}
+}
+
+func TestAddMessage(t *testing.T) {
+	fp, err := filepath.Abs("fixtures/emails/notmuch0202:2,")
+	if err != nil {
+		t.Fatalf("error getting the absolute path: %s", err)
+	}
+	nfp, err := filepath.Abs("fixtures/database-v1/new/notmuch0202:2,")
+	if err != nil {
+		t.Fatalf("error getting the absolute path: %s", err)
+	}
+
+	f, err := os.Open(fp)
+	if err != nil {
+		t.Fatalf("error opening the new email: %s", err)
+	}
+	defer f.Close()
+	nf, err := os.Create(nfp)
+	if err != nil {
+		t.Fatalf("error creating the new email: %s", err)
+	}
+	defer nf.Close()
+	if _, err := io.Copy(nf, f); err != nil {
+		t.Fatalf("error copying the email: %s", err)
+	}
+	defer os.Remove(nfp)
+
+	db, err := Open(dbPath, DBReadWrite)
+	if err != nil {
+		t.Fatalf("Open(%q): unexpected error: %s", dbPath, err)
+	}
+	defer db.Close()
+	msg, err := db.AddMessage(nfp)
+	if err != nil {
+		t.Fatalf("AddMessage(%q): got error: %s", nfp, err)
+	}
+	defer db.RemoveMessage(nfp)
+	if msg == nil {
+		t.Errorf("expecting msg to not be nil")
 	}
 }

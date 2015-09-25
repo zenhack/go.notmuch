@@ -1,0 +1,227 @@
+Delivered-To: wael.nasreddine@gmail.com
+Received: by 10.36.112.69 with SMTP id f66csp2163827itc;
+        Mon, 1 Jun 2015 13:08:45 -0700 (PDT)
+X-Received: by 10.70.47.138 with SMTP id d10mr42700114pdn.137.1433189325702;
+        Mon, 01 Jun 2015 13:08:45 -0700 (PDT)
+Return-Path: <notmuch-bounces@notmuchmail.org>
+Received: from arlo.cworth.org (arlo.cworth.org. [50.126.95.6])
+        by mx.google.com with ESMTPS id ue10si22940859pab.139.2015.06.01.13.08.44
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+        Mon, 01 Jun 2015 13:08:45 -0700 (PDT)
+Received-SPF: neutral (google.com: 50.126.95.6 is neither permitted nor denied by best guess record for domain of notmuch-bounces@notmuchmail.org) client-ip=50.126.95.6;
+Authentication-Results: mx.google.com;
+       spf=neutral (google.com: 50.126.95.6 is neither permitted nor denied by best guess record for domain of notmuch-bounces@notmuchmail.org) smtp.mail=notmuch-bounces@notmuchmail.org
+Received: from localhost (localhost [127.0.0.1])
+	by arlo.cworth.org (Postfix) with ESMTP id 906356DE1638;
+	Mon,  1 Jun 2015 13:08:43 -0700 (PDT)
+X-Virus-Scanned: Debian amavisd-new at cworth.org
+Received: from arlo.cworth.org ([127.0.0.1])
+	by localhost (arlo.cworth.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id U9Q6Fh0H14Fz; Mon,  1 Jun 2015 13:08:41 -0700 (PDT)
+Received: from arlo.cworth.org (localhost [IPv6:::1])
+	by arlo.cworth.org (Postfix) with ESMTP id 367B26DE13AF;
+	Mon,  1 Jun 2015 13:08:37 -0700 (PDT)
+X-Original-To: notmuch@notmuchmail.org
+Delivered-To: notmuch@notmuchmail.org
+Received: from localhost (localhost [127.0.0.1])
+ by arlo.cworth.org (Postfix) with ESMTP id 3C8BC6DE13A3
+ for <notmuch@notmuchmail.org>; Mon,  1 Jun 2015 13:08:36 -0700 (PDT)
+X-Virus-Scanned: Debian amavisd-new at cworth.org
+Received: from arlo.cworth.org ([127.0.0.1])
+ by localhost (arlo.cworth.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id tHGM6QEemO71 for <notmuch@notmuchmail.org>;
+ Mon,  1 Jun 2015 13:08:34 -0700 (PDT)
+Received: from mx.xen14.node3324.gplhost.com (gitolite.debian.net
+ [87.98.215.224])
+ by arlo.cworth.org (Postfix) with ESMTPS id EDF4A6DE138F
+ for <notmuch@notmuchmail.org>; Mon,  1 Jun 2015 13:08:33 -0700 (PDT)
+Received: from remotemail by mx.xen14.node3324.gplhost.com with local (Exim
+ 4.80) (envelope-from <david@tethera.net>)
+ id 1YzW08-0001B3-Ig; Mon, 01 Jun 2015 20:08:00 +0000
+Received: (nullmailer pid 4587 invoked by uid 1000); Mon, 01 Jun 2015
+ 20:07:42 -0000
+From: David Bremner <david@tethera.net>
+To: notmuch <notmuch@notmuchmail.org>
+Subject: notmuch release 0.20 (and 0.20.1) now available
+User-Agent: Notmuch/0.20+15~ga1b054b (http://notmuchmail.org) Emacs/24.4.1
+ (x86_64-pc-linux-gnu)
+Date: Mon, 01 Jun 2015 22:07:39 +0200
+Message-ID: <876177w5tg.fsf@maritornes.cs.unb.ca>
+MIME-Version: 1.0
+X-BeenThere: notmuch@notmuchmail.org
+X-Mailman-Version: 2.1.18
+Precedence: list
+List-Id: "Use and development of the notmuch mail system."
+ <notmuch.notmuchmail.org>
+List-Unsubscribe: <http://notmuchmail.org/mailman/options/notmuch>,
+ <mailto:notmuch-request@notmuchmail.org?subject=unsubscribe>
+List-Archive: <http://notmuchmail.org/pipermail/notmuch/>
+List-Post: <mailto:notmuch@notmuchmail.org>
+List-Help: <mailto:notmuch-request@notmuchmail.org?subject=help>
+List-Subscribe: <http://notmuchmail.org/mailman/listinfo/notmuch>,
+ <mailto:notmuch-request@notmuchmail.org?subject=subscribe>
+Content-Type: multipart/mixed; boundary="===============0822081080=="
+Errors-To: notmuch-bounces@notmuchmail.org
+Sender: "notmuch" <notmuch-bounces@notmuchmail.org>
+
+--===============0822081080==
+Content-Type: multipart/signed; boundary="=-=-="; micalg=pgp-sha256; protocol="application/pgp-signature"
+
+--=-=-=
+Content-Type: text/plain
+
+
+(This is a 2 for one release annoncement, because while we worked
+through a hiccup in the release server, I decided to do a
+one line point release)
+
+Where to obtain notmuch 0.20.1
+===========================
+  http://notmuchmail.org/releases/notmuch-0.20.1.tar.gz
+
+Which can be verified with:
+
+  http://notmuchmail.org/releases/notmuch-0.20.1.tar.gz.sha1
+  208c177d26263e1f9d5fa01968c030d8acb3a74b  notmuch-0.20.1.tar.gz
+
+  http://notmuchmail.org/releases/notmuch-0.20.1.tar.gz.sha1.asc
+  (signed by David Bremner)
+
+What's new in notmuch 0.20.1
+=========================
+
+Test Suite
+----------
+
+Work around apparent gdb bug on arm64
+
+What's new in notmuch 0.20
+=========================
+
+Command-Line Interface
+----------------------
+
+There is a new `mimetype:` search prefix
+
+  The new `mimetype:` search prefix allows searching for the
+  content-type of attachments, which is now indexed. See the
+  `notmuch-search-terms` manual page for details.
+
+Path to gpg is now configurable
+
+  On systems with multiple versions of gpg, you can tell
+  notmuch which one to use by setting `crypto.gpg_path`
+
+Emacs
+-----
+
+Avoid rendering large text attachements.
+
+Improved rendering of CID references in HTML.
+
+Vim
+---
+
+Vim client now respects excluded tags.
+
+Notmuch-Mutt
+------------
+
+Support messages without Message-IDs.
+
+Library
+-------
+
+Undeprecate single message mboxes
+
+  It seems more trouble to remove this feature than expected, so
+  `notmuch new` will no longer nag about mboxes with a single message.
+
+New error logging facility
+
+  Clients should call `notmuch_database_status_string` to retrieve
+  output formerly printed to stderr.
+
+Several bug fixes related to stale iterators
+
+New status code returning API for n_query_search_{messages,thread}
+
+Fix for library `install_name` on Mac OS X
+
+Fix for rounding of seconds
+
+Documentation
+-------------
+
+Sphinx is now mandatory to build docs
+
+  Support for using rst2man in place of sphinx to build the
+  docmumentation has been removed.
+
+Improved notmuch-search-terms.7
+
+  The man page `notmuch-search-terms(7)` has been extended, merging
+  some material from the relicensed wiki.
+
+Contrib
+-------
+
+`notmuch-deliver` is removed. As far as we know, all functionality
+previously provided by `notmuch-deliver` should now be provided by
+`notmuch insert`, provided by the main notmuch binary.
+
+nmbug-status
+------------
+
+`nmbug-status` now only matches local branches when reading
+`status-config.json` from the `config` branch of the `NMBGIT`
+repository.  To help new users running `nmbug-status`, `nmbug clone`
+now creates a local `config` branch tracking `origin/config`.  Folks
+who use `nmbug-status` with an in-Git config (i.e. you don't use the
+`--config` option) who already have `NMBGIT` set up are encouraged to
+run:
+
+    git checkout config origin/config
+
+in their `NMBGIT` repository (usually `~/.nmbug`).
+
+What is notmuch
+===============
+Notmuch is a system for indexing, searching, reading, and tagging
+large collections of email messages in maildir or mh format. It uses
+the Xapian library to provide fast, full-text search with a convenient
+search syntax.
+
+For more about notmuch, see http://notmuchmail.org
+
+
+--=-=-=
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQGcBAEBCAAGBQJVbLuMAAoJEPIClx2kp54sfyEMAIm4/4efJVTHFUsdHRW1po2z
+wSXwo4X7uVq3+G5aB0rC93Hzw2d3eM0tEC7+eL9Wl1QT9ktapPmzYJ24tOhavgxJ
+u0MuLZcHWl+WaHUJeLwrNGGHnlxzTP1oGgGEoE6m2v+jNjrEd4WCfuqg4AgOtzAT
+Al6dEtxAatNGl+FnbiGrREsdeyt9+eRElc0cElcz1Hry3Ey4w1kUWd9zcFdJZbnT
+qYmGaNp1Iw3GO565OrU5dppS0qWK2sXLSUxDr7hLAdjG/AVbbWaa2Qlqh+m3++FF
+PRdUxJju5cmQVrit0gYj9vCVgpM/+fxt9k5OYF2ZVG+ZZDgYQoxfL75t/XXW9skj
+s925oxY87Y94jC+UQ0N+k+nG/z9xany1J3xvIIZHL8cTCQA8TawPYRt/BuEI9Phw
+/hD09+ARqpVuDQkpA3NC3KRe8j//zIw8lSl6OeXGhRMlQq+gbUwbpQ8sOZe5oUNV
+zgAHAxrfPKgKVmGzlEG/phhgTT4aEBikOiPoU64eug==
+=ziYk
+-----END PGP SIGNATURE-----
+--=-=-=--
+
+--===============0822081080==
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: base64
+Content-Disposition: inline
+
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18Kbm90bXVjaCBt
+YWlsaW5nIGxpc3QKbm90bXVjaEBub3RtdWNobWFpbC5vcmcKaHR0cDovL25vdG11Y2htYWlsLm9y
+Zy9tYWlsbWFuL2xpc3RpbmZvL25vdG11Y2gK
+
+--===============0822081080==--
