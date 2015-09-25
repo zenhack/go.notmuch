@@ -26,3 +26,14 @@ func (t *Thread) GetSubject() string {
 func (t *Thread) GetID() string {
 	return C.GoString(C.notmuch_thread_get_thread_id(t.cptr))
 }
+
+// Count returns the total number of messages in the current thread.
+func (t *Thread) Count() int {
+	return int(C.notmuch_thread_get_total_messages(t.cptr))
+}
+
+// CountMatched returns the total number of messages in the current thread that
+// matched the search.
+func (t *Thread) CountMatched() int {
+	return int(C.notmuch_thread_get_matched_messages(t.cptr))
+}
