@@ -191,3 +191,19 @@ func (db *DB) FindMessageByFilename(filename string) (*Message, error) {
 	})
 	return msg, nil
 }
+
+// Tags returns the list of all tags in the database.
+func (db *DB) Tags() (*Tags, error) {
+	ctags := C.notmuch_database_get_all_tags(db.cptr)
+	if ctags == nil {
+		return nil, ErrUnknownError
+	}
+	tags := &Tags{
+		cptr: ctags,
+	}
+	runtime.SetFinalizer(tags, func(t *Tags) {
+		C.notmuch_tags_destroy(tags.cptr)
+	})
+
+	return tags, nil
+}

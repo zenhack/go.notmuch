@@ -189,3 +189,15 @@ func TestFindMessageByFilename(t *testing.T) {
 		t.Errorf("db.FindMessageByFilename(%q).GetID(): want %s got %s", p, want, got)
 	}
 }
+
+func TestTags(t *testing.T) {
+	db, err := Open(dbPath, DBReadOnly)
+	if err != nil {
+		t.Fatalf("Open(%q): unexpected error: %s", dbPath, err)
+	}
+	defer db.Close()
+	if _, err := db.Tags(); err != nil {
+		t.Fatalf("db.Tags(): got error %s", err)
+	}
+	// TODO(kalbasit): extend the test when tags are fully implemented.
+}

@@ -63,6 +63,9 @@ var (
 
 	// ErrNotFound is returned when Find* did not find the thread/message by id or filename.
 	ErrNotFound = errors.New("not found")
+
+	// ErrUnknownError is returned when notmuch returns NULL indicating an error.
+	ErrUnknownError = errors.New("unknown error occured")
 )
 
 // Notmuch returns NULL in several instances on out of memory errors. The
