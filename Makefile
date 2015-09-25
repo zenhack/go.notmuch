@@ -1,7 +1,7 @@
 .PHONY: test
 
 test: fixtures/database-v1
-	@go test -v -race ./...
+	@go test -v -race -cover ./...
 	@rm -rf fixtures/database-v1
 
 fixtures/database-v1: fixtures/database-v1.tar.xz
