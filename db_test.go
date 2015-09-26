@@ -152,6 +152,16 @@ func TestAddMessage(t *testing.T) {
 	}
 }
 
+func testFindMessage(t *testing.T, db *DB, id string) {
+	msg, err := db.FindMessage(id)
+	if err != nil {
+		t.Fatalf("db.FindMessage(%q): unexpected error: %s", id, err)
+	}
+	if want, got := id, msg.GetID(); want != got {
+		t.Errorf("db.FindMessage(%q).GetID(): want %s got %s", id, want, got)
+	}
+}
+
 func TestFindMessage(t *testing.T) {
 	db, err := Open(dbPath, DBReadOnly)
 	if err != nil {
@@ -162,13 +172,7 @@ func TestFindMessage(t *testing.T) {
 		t.Errorf("db.FindMessage(\"notfound\"): expecting ErrNotFound got %s", err)
 	}
 	id := "87iqd9rn3l.fsf@vertex.dottedmag"
-	msg, err := db.FindMessage(id)
-	if err != nil {
-		t.Fatalf("db.FindMessage(%q): unexpected error: %s", id, err)
-	}
-	if want, got := id, msg.GetID(); want != got {
-		t.Errorf("db.FindMessage(%q).GetID(): want %s got %s", id, want, got)
-	}
+	testFindMessage(t, db, id)
 }
 
 func TestCompact(t *testing.T) {
@@ -183,16 +187,8 @@ func TestCompact(t *testing.T) {
 		t.Fatalf("Open(%q): unexpected error: %s", dbPath, err)
 	}
 	defer db.Close()
-
-	// same test as TestFindMessage to ensure the database integrity.
 	id := "87iqd9rn3l.fsf@vertex.dottedmag"
-	msg, err := db.FindMessage(id)
-	if err != nil {
-		t.Fatalf("db.FindMessage(%q): unexpected error: %s", id, err)
-	}
-	if want, got := id, msg.GetID(); want != got {
-		t.Errorf("db.FindMessage(%q).GetID(): want %s got %s", id, want, got)
-	}
+	testFindMessage(t, db, id)
 }
 
 func TestFindMessageByFilename(t *testing.T) {
