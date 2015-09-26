@@ -59,7 +59,8 @@ var (
 
 	// ErrPathError is returned when there is a problem with the proposed path,
 	// e.g. a relative path passed to a function expecting an absolute path.
-	ErrPathError = statusErr(C.NOTMUCH_STATUS_PATH_ERROR)
+	// TODO(kalbasit): this is currently on master. uncomment when released.
+	// ErrPathError = statusErr(C.NOTMUCH_STATUS_PATH_ERROR)
 
 	// ErrNotFound is returned when Find* did not find the thread/message by id or filename.
 	ErrNotFound = errors.New("not found")
