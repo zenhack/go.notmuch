@@ -1,6 +1,6 @@
 package main
 
-// Copyright © 2015 The go.bindings Authors. Authors can be found in the AUTHORS file.
+// Copyright © 2015 The go.notmuch Authors. Authors can be found in the AUTHORS file.
 // Licensed under the GPLv3 or later.
 // See COPYING at the root of the repository for details.
 
