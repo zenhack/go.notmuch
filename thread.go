@@ -9,6 +9,7 @@ package notmuch
 // #include <notmuch.h>
 import "C"
 import (
+	"runtime"
 	"strings"
 	"time"
 )
@@ -93,4 +94,21 @@ func (t *Thread) OldestDate() time.Time {
 func (t *Thread) NewestDate() time.Time {
 	ctime := C.notmuch_thread_get_newest_date(t.cptr)
 	return time.Unix(int64(ctime), 0)
+}
+
+// Tags returns the tags for the current thread, returning a *Tags which can be
+// used to iterate over all tags using `Tags.Next(Tag)`
+//
+// Note: In the Notmuch database, tags are stored on individual messages, not
+// on threads. So the tags returned here will be all tags of the messages which
+// matched the search and which belong to this thread.
+func (t *Thread) Tags() *Tags {
+	ts := &Tags{
+		cptr:   C.notmuch_thread_get_tags(t.cptr),
+		thread: t,
+	}
+	runtime.SetFinalizer(ts, func(ts *Tags) {
+		C.notmuch_tags_destroy(ts.cptr)
+	})
+	return ts
 }

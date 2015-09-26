@@ -227,3 +227,30 @@ func TestNewestDate(t *testing.T) {
 		t.Errorf("thread.NewestDate(): want %s got %s", want, got)
 	}
 }
+
+func TestThreadTags(t *testing.T) {
+	db, err := Open(dbPath, DBReadOnly)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	qs := "subject:\"Introducing myself\""
+	threads, err := db.NewQuery(qs).Threads()
+	if err != nil {
+		t.Fatalf("error getting the threads: %s", err)
+	}
+	thread := &Thread{}
+	if !threads.Next(thread) {
+		t.Fatalf("threads.Next(thread): unable to fetch the first and only thread")
+	}
+	ts := thread.Tags()
+	tag := &Tag{}
+	var tags []string
+	for ts.Next(tag) {
+		tags = append(tags, tag.Value)
+	}
+	if want, got := []string{"inbox", "signed", "unread"}, tags; !reflect.DeepEqual(want, got) {
+		t.Errorf("thread.Tags(): want %v got %v", want, got)
+	}
+}
