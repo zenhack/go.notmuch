@@ -30,6 +30,27 @@ func (ms *Messages) Next(m *Message) bool {
 	return true
 }
 
+// Tags return a list of tags from all messages.
+//
+// WARNING: You can no longer iterate over messages after calling this
+// function, because the iterator will point at the end of the list.  We do not
+// have a function to reset the iterator yet and the only way how you can
+// iterate over the list again is to recreate the message list.
+func (ms *Messages) Tags() *Tags {
+	ts := &Tags{
+		cptr:   C.notmuch_messages_collect_tags(ms.cptr),
+		thread: ms.thread,
+	}
+	// TODO(kalbasit): notmuch_messages_collect_tags can return NULL on error
+	// but there's not explanation on what kind of error can occur. We should handle
+	// it as OOM for now but we eventually have to narrow it down.
+	checkOOM(unsafe.Pointer(ts.cptr))
+	runtime.SetFinalizer(ts, func(ts *Tags) {
+		C.notmuch_tags_destroy(ts.cptr)
+	})
+	return ts
+}
+
 // Get fetches the currently selected message.
 func (ms *Messages) get() *Message {
 	cmessage := C.notmuch_messages_get(ms.cptr)
