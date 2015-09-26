@@ -2,9 +2,13 @@ language: go
 go:
   - 1.5
   - tip
+env:
+  - notmuch_branch=release
+  - notmuch_branch=master
 matrix:
   allow_failures:
     - go: tip
+    - env: notmuch_branch=master
 before_install:
   - uname -a
   - cat /etc/lsb-release
@@ -22,7 +26,7 @@ before_install:
   - sudo dpkg -i zlib1g-dev_1.2.8.dfsg-1ubuntu1_amd64.deb zlib1g_1.2.8.dfsg-1ubuntu1_amd64.deb
   - sudo apt-get install -f
 
-  - git clone --depth=50 https://github.com/notmuch/notmuch.git -b release
+  - git clone --depth=50 https://github.com/notmuch/notmuch.git -b $notmuch_branch
   - pushd notmuch
   - ./configure --prefix=/usr
   - sudo make install
