@@ -16,8 +16,14 @@ import (
 
 // Query represents a notmuch query.
 type Query struct {
+	qs   string
 	cptr *C.notmuch_query_t
 	db   *DB
+}
+
+// String returns the query as a string, implements fmt.Stringer.
+func (q *Query) String() string {
+	return q.qs
 }
 
 // Threads returns the threads matching the query.

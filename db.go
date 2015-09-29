@@ -95,6 +95,7 @@ func (db *DB) NewQuery(queryString string) *Query {
 	defer C.free(unsafe.Pointer(cstr))
 	cquery := C.notmuch_query_create(db.cptr, cstr)
 	query := &Query{
+		qs:   queryString,
 		cptr: cquery,
 		db:   db,
 	}

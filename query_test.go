@@ -77,3 +77,16 @@ func TestQueryCountThreads(t *testing.T) {
 		t.Errorf("q.Count(): want %d got %d", want, got)
 	}
 }
+
+func TestString(t *testing.T) {
+	db, err := Open(dbPath, DBReadOnly)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	q := db.NewQuery("subject:\"Introducing myself\"")
+	if want, got := "subject:\"Introducing myself\"", q.String(); want != got {
+		t.Errorf("q.String(): want %s got %s", want, got)
+	}
+}
