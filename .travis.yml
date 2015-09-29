@@ -32,4 +32,6 @@ before_install:
   - sudo make install
   - popd
   - sudo rm -rf notmuch
-script: make test
+# In addition to running the test suite, we should also make sure the example
+# builds.
+script: make test && cd example && go build
