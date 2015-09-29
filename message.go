@@ -16,12 +16,12 @@ type Message struct {
 	thread   *Thread
 }
 
-// GetID returns the message ID.
-func (m *Message) GetID() string {
+// ID returns the message ID.
+func (m *Message) ID() string {
 	return C.GoString(C.notmuch_message_get_message_id(m.cptr))
 }
 
-// GetThreadID returns the ID of the thread to which this message belongs to.
-func (m *Message) GetThreadID() string {
+// ThreadID returns the ID of the thread to which this message belongs to.
+func (m *Message) ThreadID() string {
 	return C.GoString(C.notmuch_message_get_thread_id(m.cptr))
 }

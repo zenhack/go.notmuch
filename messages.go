@@ -51,7 +51,6 @@ func (ms *Messages) Tags() *Tags {
 	return ts
 }
 
-// Get fetches the currently selected message.
 func (ms *Messages) get() *Message {
 	cmessage := C.notmuch_messages_get(ms.cptr)
 	checkOOM(unsafe.Pointer(cmessage))

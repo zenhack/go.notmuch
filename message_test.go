@@ -2,7 +2,7 @@ package notmuch
 
 import "testing"
 
-func TestMessageGetID(t *testing.T) {
+func TestMessageID(t *testing.T) {
 	db, err := Open(dbPath, DBReadOnly)
 	if err != nil {
 		t.Fatal(err)
@@ -23,12 +23,12 @@ func TestMessageGetID(t *testing.T) {
 	if !msgs.Next(msg) {
 		t.Fatalf("msgs.Next(msg): unable to fetch the first message in the thread")
 	}
-	if want, got := "20091118002059.067214ed@hikari", msg.GetID(); want != got {
-		t.Errorf("msg.GetID(): want %s got %s", want, got)
+	if want, got := "20091118002059.067214ed@hikari", msg.ID(); want != got {
+		t.Errorf("msg.ID(): want %s got %s", want, got)
 	}
 }
 
-func TestMessageGetThreadID(t *testing.T) {
+func TestMessageThreadID(t *testing.T) {
 	db, err := Open(dbPath, DBReadOnly)
 	if err != nil {
 		t.Fatal(err)
@@ -49,7 +49,7 @@ func TestMessageGetThreadID(t *testing.T) {
 	if !msgs.Next(msg) {
 		t.Fatalf("msgs.Next(msg): unable to fetch the first message in the thread")
 	}
-	if want, got := thread.GetID(), msg.GetThreadID(); want != got {
-		t.Errorf("msg.GetThreadID(): want %s got %s", want, got)
+	if want, got := thread.ID(), msg.ThreadID(); want != got {
+		t.Errorf("msg.ThreadID(): want %s got %s", want, got)
 	}
 }

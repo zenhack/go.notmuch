@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-func TestGetThreadID(t *testing.T) {
+func TestThreadID(t *testing.T) {
 	db, err := Open(dbPath, DBReadOnly)
 	if err != nil {
 		t.Fatal(err)
@@ -25,8 +25,8 @@ func TestGetThreadID(t *testing.T) {
 	if !threads.Next(thread) {
 		t.Fatalf("threads.Next(thread): unable to fetch the first and only thread")
 	}
-	if want, got := "0000000000000014", thread.GetID(); want != got {
-		t.Errorf("db.NewQuery(%q).Threads()[0].GetID(): want %s got %s", "Essai accentué", want, got)
+	if want, got := "0000000000000014", thread.ID(); want != got {
+		t.Errorf("db.NewQuery(%q).Threads()[0].ID(): want %s got %s", "Essai accentué", want, got)
 	}
 }
 
@@ -54,7 +54,7 @@ func TestCount(t *testing.T) {
 	}
 }
 
-func TestGetSubjectUTF8(t *testing.T) {
+func TestSubjectUTF8(t *testing.T) {
 	db, err := Open(dbPath, DBReadOnly)
 	if err != nil {
 		t.Fatal(err)
@@ -69,8 +69,8 @@ func TestGetSubjectUTF8(t *testing.T) {
 	if !threads.Next(thread) {
 		t.Fatalf("threads.Next(thread): unable to fetch the first and only thread")
 	}
-	if want, got := "Essai accentué", thread.GetSubject(); want != got {
-		t.Errorf("db.NewQuery(%q).Threads().Get().GetSubject(): want %s got %s", want, want, got)
+	if want, got := "Essai accentué", thread.Subject(); want != got {
+		t.Errorf("db.NewQuery(%q).Threads().Get().Subject(): want %s got %s", want, want, got)
 	}
 }
 

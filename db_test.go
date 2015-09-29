@@ -157,8 +157,8 @@ func testFindMessage(t *testing.T, db *DB, id string) {
 	if err != nil {
 		t.Fatalf("db.FindMessage(%q): unexpected error: %s", id, err)
 	}
-	if want, got := id, msg.GetID(); want != got {
-		t.Errorf("db.FindMessage(%q).GetID(): want %s got %s", id, want, got)
+	if want, got := id, msg.ID(); want != got {
+		t.Errorf("db.FindMessage(%q).ID(): want %s got %s", id, want, got)
 	}
 }
 
@@ -206,8 +206,8 @@ func TestFindMessageByFilename(t *testing.T) {
 	if err != nil {
 		t.Fatalf("db.FindMessageByFilename(%q): unexpected error: %s", p, err)
 	}
-	if want, got := id, msg.GetID(); want != got {
-		t.Errorf("db.FindMessageByFilename(%q).GetID(): want %s got %s", p, want, got)
+	if want, got := id, msg.ID(); want != got {
+		t.Errorf("db.FindMessageByFilename(%q).ID(): want %s got %s", p, want, got)
 	}
 }
 

@@ -26,7 +26,6 @@ func (ts *Tags) Next(t *Tag) bool {
 	return true
 }
 
-// Get fetches the currently selected tag.
 func (ts *Tags) get() *Tag {
 	ctag := C.notmuch_tags_get(ts.cptr)
 	tag := &Tag{

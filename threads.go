@@ -31,7 +31,6 @@ func (ts *Threads) Next(t *Thread) bool {
 	return true
 }
 
-// Get fetches the currently selected thread.
 func (ts *Threads) get() *Thread {
 	cthread := C.notmuch_threads_get(ts.cptr)
 	checkOOM(unsafe.Pointer(cthread))

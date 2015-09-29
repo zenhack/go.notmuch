@@ -35,6 +35,6 @@ func main() {
 	}
 	thread := &notmuch.Thread{}
 	for threads.Next(thread) {
-		fmt.Println(thread.GetSubject())
+		fmt.Println(thread.Subject())
 	}
 }

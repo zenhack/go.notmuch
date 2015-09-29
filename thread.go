@@ -20,15 +20,15 @@ type Thread struct {
 	threads *Threads
 }
 
-// GetSubject returns the subject of a thread.
-func (t *Thread) GetSubject() string {
+// Subject returns the subject of a thread.
+func (t *Thread) Subject() string {
 	cstr := C.notmuch_thread_get_subject(t.cptr)
 	str := C.GoString(cstr)
 	return str
 }
 
-// GetID returns the ID of the thread.
-func (t *Thread) GetID() string {
+// ID returns the ID of the thread.
+func (t *Thread) ID() string {
 	return C.GoString(C.notmuch_thread_get_thread_id(t.cptr))
 }
 
