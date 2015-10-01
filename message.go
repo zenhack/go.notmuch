@@ -38,3 +38,22 @@ func (m *Message) Replies() (*Messages, error) {
 		thread: m.thread,
 	}, nil
 }
+
+// Filename returns the absolute path of the email message.
+//
+// Note: If this message corresponds to multiple files in the mail store, (that
+// is, multiple files contain identical message IDs), this function will
+// arbitrarily return a single one of those filenames. See Filenames for
+// returning the complete list of filenames.
+func (m *Message) Filename() string {
+	return C.GoString(C.notmuch_message_get_filename(m.cptr))
+}
+
+// Filenames returns *Filenames an iterator to get the message's filenames.
+// Each filename in the iterator is an absolute filename.
+func (m *Message) Filenames() *Filenames {
+	return &Filenames{
+		cptr:    C.notmuch_message_get_filenames(m.cptr),
+		message: m,
+	}
+}
