@@ -14,7 +14,6 @@ before_install:
   - cat /etc/lsb-release
   - go get -u golang.org/x/tools/cmd/cover
   - sudo apt-get update -qq
-  - apt-cache search ruby
   - sudo apt-get install dtach libxapian-dev libgmime-2.6-dev libtalloc-dev python-sphinx ruby-dev
 
   # Notmuch requires zlib 1.2.5.2, unfortunately travis runs on Ubuntu 12.04LTS which
