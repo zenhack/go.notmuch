@@ -8,6 +8,7 @@ package notmuch
 // #include <stdlib.h>
 // #include <notmuch.h>
 import "C"
+import "unsafe"
 
 // Message represents a notmuch message.
 type Message struct {
@@ -24,4 +25,16 @@ func (m *Message) ID() string {
 // ThreadID returns the ID of the thread to which this message belongs to.
 func (m *Message) ThreadID() string {
 	return C.GoString(C.notmuch_message_get_thread_id(m.cptr))
+}
+
+// Replies returns the replies of a message.
+func (m *Message) Replies() (*Messages, error) {
+	cmsgs := C.notmuch_message_get_replies(m.cptr)
+	if unsafe.Pointer(cmsgs) == nil {
+		return nil, ErrNoRepliesOrPointerNotFromThread
+	}
+	return &Messages{
+		cptr:   cmsgs,
+		thread: m.thread,
+	}, nil
 }
