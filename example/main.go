@@ -35,6 +35,7 @@ func main() {
 	}
 	thread := &notmuch.Thread{}
 	for threads.Next(thread) {
-		fmt.Println(thread.Subject())
+		m, um := thread.Authors()
+		fmt.Printf("id:%s subject:%q authors:%v\n", thread.ID(), thread.Subject(), append(m, um...))
 	}
 }
