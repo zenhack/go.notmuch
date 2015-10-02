@@ -108,3 +108,12 @@ func (m *Message) RemoveTag(tag string) error {
 func (m *Message) RemoveAllTags() error {
 	return statusErr(C.notmuch_message_remove_all_tags(m.cptr))
 }
+
+// Atomic allows a transactional change of tags to the message.
+func (m *Message) Atomic(callback func(*Message)) error {
+	if err := statusErr(C.notmuch_message_freeze(m.cptr)); err != nil {
+		return err
+	}
+	callback(m)
+	return statusErr(C.notmuch_message_thaw(m.cptr))
+}

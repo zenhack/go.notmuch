@@ -379,3 +379,67 @@ func TestMessageAddRemoveTag(t *testing.T) {
 	msg.AddTag("inbox")
 	msg.AddTag("unread")
 }
+
+func TestMessageAtomic(t *testing.T) {
+	db, err := Open(dbPath, DBReadWrite)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	qs := "id:1258471718-6781-2-git-send-email-dottedmag@dottedmag.net"
+	threads, err := db.NewQuery(qs).Threads()
+	if err != nil {
+		t.Fatalf("error getting the threads: %s", err)
+	}
+	thread := &Thread{}
+	if !threads.Next(thread) {
+		t.Fatalf("threads.Next(thread): unable to fetch the first and only thread")
+	}
+	msgs := thread.Messages()
+	msg := &Message{}
+	for msgs.Next(msg) {
+		if msg.ID() == "1258471718-6781-2-git-send-email-dottedmag@dottedmag.net" {
+			break
+		}
+	}
+
+	ts := msg.Tags()
+	tag := &Tag{}
+	var tags []string
+	for ts.Next(tag) {
+		tags = append(tags, tag.Value)
+	}
+	if want, got := []string{"inbox", "unread"}, tags; !reflect.DeepEqual(want, got) {
+		t.Errorf("msg.Tags(): want %v got %v", want, got)
+	}
+
+	tn := "newtag"
+	msg.Atomic(func(mymsg *Message) {
+		if err := mymsg.AddTag(tn); err != nil {
+			t.Fatalf("msg.AddTag(%q): got error: %s", tn, err)
+		}
+	})
+	ts = msg.Tags()
+	tags = []string{}
+	for ts.Next(tag) {
+		tags = append(tags, tag.Value)
+	}
+	if want, got := []string{"inbox", tn, "unread"}, tags; !reflect.DeepEqual(want, got) {
+		t.Errorf("msg.Tags(): want %v got %v", want, got)
+	}
+
+	msg.Atomic(func(mymsg *Message) {
+		if err := mymsg.RemoveTag(tn); err != nil {
+			t.Fatalf("msg.RemoveTag(%q): got error: %s", tn, err)
+		}
+	})
+	ts = msg.Tags()
+	tags = []string{}
+	for ts.Next(tag) {
+		tags = append(tags, tag.Value)
+	}
+	if want, got := []string{"inbox", "unread"}, tags; !reflect.DeepEqual(want, got) {
+		t.Errorf("msg.Tags(): want %v got %v", want, got)
+	}
+}
