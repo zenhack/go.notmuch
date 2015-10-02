@@ -89,3 +89,22 @@ func (m *Message) Tags() *Tags {
 	})
 	return ts
 }
+
+// AddTag adds a tag to the message.
+func (m *Message) AddTag(tag string) error {
+	ctag := C.CString(tag)
+	defer C.free(unsafe.Pointer(ctag))
+	return statusErr(C.notmuch_message_add_tag(m.cptr, ctag))
+}
+
+// RemoveTag removes a tag from the message.
+func (m *Message) RemoveTag(tag string) error {
+	ctag := C.CString(tag)
+	defer C.free(unsafe.Pointer(ctag))
+	return statusErr(C.notmuch_message_remove_tag(m.cptr, ctag))
+}
+
+// RemoveAllTags removes all tags from the message.
+func (m *Message) RemoveAllTags() error {
+	return statusErr(C.notmuch_message_remove_all_tags(m.cptr))
+}
