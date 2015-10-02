@@ -6,6 +6,7 @@ package notmuch
 
 import (
 	"reflect"
+	"runtime"
 	"testing"
 	"time"
 )
@@ -98,6 +99,10 @@ func TestTopLevelMessages(t *testing.T) {
 	var count int
 	for msgs.Next(message) {
 		count++
+		// invoke the GC to make sure it's running smoothly.
+		if count%2 == 0 {
+			runtime.GC()
+		}
 	}
 	if want, got := 1, count; want != got {
 		t.Errorf("db.NewQuery(%q).Threads()[0].TopLevelMessages(): want %d got %d", qs, want, got)
@@ -128,6 +133,10 @@ func TestMessages(t *testing.T) {
 	var count int
 	for msgs.Next(message) {
 		count++
+		// invoke the GC to make sure it's running smoothly.
+		if count%2 == 0 {
+			runtime.GC()
+		}
 	}
 	if want, got := 3, count; want != got {
 		t.Errorf("db.NewQuery(%q).Threads()[0].Messages(): want %d got %d", qs, want, got)
@@ -181,6 +190,11 @@ func TestAuthors(t *testing.T) {
 			}
 			if want, got := ress[i].unmatched, unmatched; !reflect.DeepEqual(want, got) {
 				t.Errorf("thread.Authors() unmatched: want %v got %v", want, got)
+			}
+
+			// invoke the GC to make sure it's running smoothly.
+			if i%2 == 0 {
+				runtime.GC()
 			}
 		}
 	}
@@ -249,6 +263,8 @@ func TestThreadTags(t *testing.T) {
 	var tags []string
 	for ts.Next(tag) {
 		tags = append(tags, tag.Value)
+		// invoke the GC to make sure it's running smoothly.
+		runtime.GC()
 	}
 	if want, got := []string{"inbox", "signed", "unread"}, tags; !reflect.DeepEqual(want, got) {
 		t.Errorf("thread.Tags(): want %v got %v", want, got)
