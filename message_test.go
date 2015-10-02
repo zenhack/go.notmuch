@@ -255,3 +255,127 @@ func TestMessageTags(t *testing.T) {
 		t.Errorf("msg.Tags(): want %v got %v", want, got)
 	}
 }
+
+func TestMessageAddRemoveTagReadonlyDB(t *testing.T) {
+	db, err := Open(dbPath, DBReadOnly)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	qs := "id:1258471718-6781-2-git-send-email-dottedmag@dottedmag.net"
+	threads, err := db.NewQuery(qs).Threads()
+	if err != nil {
+		t.Fatalf("error getting the threads: %s", err)
+	}
+	thread := &Thread{}
+	if !threads.Next(thread) {
+		t.Fatalf("threads.Next(thread): unable to fetch the first and only thread")
+	}
+	msgs := thread.Messages()
+	msg := &Message{}
+	for msgs.Next(msg) {
+		if msg.ID() == "1258471718-6781-2-git-send-email-dottedmag@dottedmag.net" {
+			break
+		}
+	}
+
+	ts := msg.Tags()
+	tag := &Tag{}
+	var tags []string
+	for ts.Next(tag) {
+		tags = append(tags, tag.Value)
+	}
+	if want, got := []string{"inbox", "unread"}, tags; !reflect.DeepEqual(want, got) {
+		t.Errorf("msg.Tags(): want %v got %v", want, got)
+	}
+	tn := "newtag"
+	if err := msg.AddTag(tn); err != ErrReadOnlyDB {
+		t.Errorf("msg.AddTag(%q): want error %s got %s", tn, ErrReadOnlyDB, err)
+	}
+	if want, got := []string{"inbox", "unread"}, tags; !reflect.DeepEqual(want, got) {
+		t.Errorf("msg.Tags(): want %v got %v", want, got)
+	}
+	if err := msg.RemoveTag(tn); err != ErrReadOnlyDB {
+		t.Errorf("msg.RemoveTag(%q): want error %s got %s", tn, ErrReadOnlyDB, err)
+	}
+	if want, got := []string{"inbox", "unread"}, tags; !reflect.DeepEqual(want, got) {
+		t.Errorf("msg.Tags(): want %v got %v", want, got)
+	}
+}
+
+func TestMessageAddRemoveTag(t *testing.T) {
+	db, err := Open(dbPath, DBReadWrite)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	qs := "id:1258471718-6781-2-git-send-email-dottedmag@dottedmag.net"
+	threads, err := db.NewQuery(qs).Threads()
+	if err != nil {
+		t.Fatalf("error getting the threads: %s", err)
+	}
+	thread := &Thread{}
+	if !threads.Next(thread) {
+		t.Fatalf("threads.Next(thread): unable to fetch the first and only thread")
+	}
+	msgs := thread.Messages()
+	msg := &Message{}
+	for msgs.Next(msg) {
+		if msg.ID() == "1258471718-6781-2-git-send-email-dottedmag@dottedmag.net" {
+			break
+		}
+	}
+
+	ts := msg.Tags()
+	tag := &Tag{}
+	var tags []string
+	for ts.Next(tag) {
+		tags = append(tags, tag.Value)
+	}
+	if want, got := []string{"inbox", "unread"}, tags; !reflect.DeepEqual(want, got) {
+		t.Errorf("msg.Tags(): want %v got %v", want, got)
+	}
+
+	tn := "newtag"
+	if err := msg.AddTag(tn); err != nil {
+		t.Fatalf("msg.AddTag(%q): got error: %s", tn, err)
+	}
+	ts = msg.Tags()
+	tags = []string{}
+	for ts.Next(tag) {
+		tags = append(tags, tag.Value)
+	}
+	if want, got := []string{"inbox", tn, "unread"}, tags; !reflect.DeepEqual(want, got) {
+		t.Errorf("msg.Tags(): want %v got %v", want, got)
+	}
+
+	if err := msg.RemoveTag(tn); err != nil {
+		t.Fatalf("msg.RemoveTag(%q): got error: %s", tn, err)
+	}
+	ts = msg.Tags()
+	tags = []string{}
+	for ts.Next(tag) {
+		tags = append(tags, tag.Value)
+	}
+	if want, got := []string{"inbox", "unread"}, tags; !reflect.DeepEqual(want, got) {
+		t.Errorf("msg.Tags(): want %v got %v", want, got)
+	}
+
+	if err := msg.RemoveAllTags(); err != nil {
+		t.Fatalf("msg.RemoveAllTag(): got error: %s", err)
+	}
+	ts = msg.Tags()
+	tags = []string{}
+	for ts.Next(tag) {
+		tags = append(tags, tag.Value)
+	}
+	if want, got := []string{}, tags; !reflect.DeepEqual(want, got) {
+		t.Errorf("msg.Tags(): want %v got %v", want, got)
+	}
+
+	// return the DB to the pristine condition.
+	msg.AddTag("inbox")
+	msg.AddTag("unread")
+}
