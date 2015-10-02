@@ -3,6 +3,7 @@ package notmuch
 import (
 	"path"
 	"reflect"
+	"runtime"
 	"testing"
 	"time"
 )
@@ -73,6 +74,11 @@ func TestMessageReplies(t *testing.T) {
 	var count int
 	for replies.Next(msg) {
 		count++
+
+		// invoke the GC to make sure it's running smoothly.
+		if count%2 == 0 {
+			runtime.GC()
+		}
 	}
 	if want, got := 2, count; want != got {
 		t.Errorf("msg.Replies(): want %d replies got %d", want, got)
@@ -133,6 +139,11 @@ func TestMessageFilenames(t *testing.T) {
 	fns := msg.Filenames()
 	for fns.Next(&fn) {
 		count++
+
+		// invoke the GC to make sure it's running smoothly.
+		if count%2 == 0 {
+			runtime.GC()
+		}
 	}
 
 	if want, got := 2, count; want != got {
@@ -178,6 +189,9 @@ func TestMessageHeader(t *testing.T) {
 		if msg.ID() == "1258471718-6781-2-git-send-email-dottedmag@dottedmag.net" {
 			break
 		}
+
+		// invoke the GC to make sure it's running smoothly.
+		runtime.GC()
 	}
 	for _, hn := range []string{"References", "references"} {
 		if want, got := "<1258471718-6781-1-git-send-email-dottedmag@dottedmag.net>", msg.Header(hn); want != got {
@@ -203,6 +217,8 @@ func TestMessageTags(t *testing.T) {
 		if msg.ID() == "1258471718-6781-2-git-send-email-dottedmag@dottedmag.net" {
 			break
 		}
+		// invoke the GC to make sure it's running smoothly.
+		runtime.GC()
 	}
 
 	ts := msg.Tags()
@@ -210,6 +226,8 @@ func TestMessageTags(t *testing.T) {
 	var tags []string
 	for ts.Next(tag) {
 		tags = append(tags, tag.Value)
+		// invoke the GC to make sure it's running smoothly.
+		runtime.GC()
 	}
 	if want, got := []string{"inbox", "unread"}, tags; !reflect.DeepEqual(want, got) {
 		t.Errorf("msg.Tags(): want %v got %v", want, got)
@@ -233,6 +251,8 @@ func TestMessageAddRemoveTagReadonlyDB(t *testing.T) {
 		if msg.ID() == "1258471718-6781-2-git-send-email-dottedmag@dottedmag.net" {
 			break
 		}
+		// invoke the GC to make sure it's running smoothly.
+		runtime.GC()
 	}
 
 	ts := msg.Tags()
@@ -240,6 +260,8 @@ func TestMessageAddRemoveTagReadonlyDB(t *testing.T) {
 	var tags []string
 	for ts.Next(tag) {
 		tags = append(tags, tag.Value)
+		// invoke the GC to make sure it's running smoothly.
+		runtime.GC()
 	}
 	if want, got := []string{"inbox", "unread"}, tags; !reflect.DeepEqual(want, got) {
 		t.Errorf("msg.Tags(): want %v got %v", want, got)
@@ -276,6 +298,8 @@ func TestMessageAddRemoveTag(t *testing.T) {
 		if msg.ID() == "1258471718-6781-2-git-send-email-dottedmag@dottedmag.net" {
 			break
 		}
+		// invoke the GC to make sure it's running smoothly.
+		runtime.GC()
 	}
 
 	ts := msg.Tags()
@@ -283,6 +307,8 @@ func TestMessageAddRemoveTag(t *testing.T) {
 	var tags []string
 	for ts.Next(tag) {
 		tags = append(tags, tag.Value)
+		// invoke the GC to make sure it's running smoothly.
+		runtime.GC()
 	}
 	if want, got := []string{"inbox", "unread"}, tags; !reflect.DeepEqual(want, got) {
 		t.Errorf("msg.Tags(): want %v got %v", want, got)
@@ -296,6 +322,8 @@ func TestMessageAddRemoveTag(t *testing.T) {
 	tags = []string{}
 	for ts.Next(tag) {
 		tags = append(tags, tag.Value)
+		// invoke the GC to make sure it's running smoothly.
+		runtime.GC()
 	}
 	if want, got := []string{"inbox", tn, "unread"}, tags; !reflect.DeepEqual(want, got) {
 		t.Errorf("msg.Tags(): want %v got %v", want, got)
@@ -308,6 +336,8 @@ func TestMessageAddRemoveTag(t *testing.T) {
 	tags = []string{}
 	for ts.Next(tag) {
 		tags = append(tags, tag.Value)
+		// invoke the GC to make sure it's running smoothly.
+		runtime.GC()
 	}
 	if want, got := []string{"inbox", "unread"}, tags; !reflect.DeepEqual(want, got) {
 		t.Errorf("msg.Tags(): want %v got %v", want, got)
@@ -320,6 +350,8 @@ func TestMessageAddRemoveTag(t *testing.T) {
 	tags = []string{}
 	for ts.Next(tag) {
 		tags = append(tags, tag.Value)
+		// invoke the GC to make sure it's running smoothly.
+		runtime.GC()
 	}
 	if want, got := []string{}, tags; !reflect.DeepEqual(want, got) {
 		t.Errorf("msg.Tags(): want %v got %v", want, got)
@@ -347,6 +379,8 @@ func TestMessageAtomic(t *testing.T) {
 		if msg.ID() == "1258471718-6781-2-git-send-email-dottedmag@dottedmag.net" {
 			break
 		}
+		// invoke the GC to make sure it's running smoothly.
+		runtime.GC()
 	}
 
 	ts := msg.Tags()
@@ -354,6 +388,8 @@ func TestMessageAtomic(t *testing.T) {
 	var tags []string
 	for ts.Next(tag) {
 		tags = append(tags, tag.Value)
+		// invoke the GC to make sure it's running smoothly.
+		runtime.GC()
 	}
 	if want, got := []string{"inbox", "unread"}, tags; !reflect.DeepEqual(want, got) {
 		t.Errorf("msg.Tags(): want %v got %v", want, got)
@@ -369,6 +405,8 @@ func TestMessageAtomic(t *testing.T) {
 	tags = []string{}
 	for ts.Next(tag) {
 		tags = append(tags, tag.Value)
+		// invoke the GC to make sure it's running smoothly.
+		runtime.GC()
 	}
 	if want, got := []string{"inbox", tn, "unread"}, tags; !reflect.DeepEqual(want, got) {
 		t.Errorf("msg.Tags(): want %v got %v", want, got)
@@ -383,6 +421,8 @@ func TestMessageAtomic(t *testing.T) {
 	tags = []string{}
 	for ts.Next(tag) {
 		tags = append(tags, tag.Value)
+		// invoke the GC to make sure it's running smoothly.
+		runtime.GC()
 	}
 	if want, got := []string{"inbox", "unread"}, tags; !reflect.DeepEqual(want, got) {
 		t.Errorf("msg.Tags(): want %v got %v", want, got)

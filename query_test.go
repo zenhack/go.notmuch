@@ -4,7 +4,10 @@ package notmuch
 // Licensed under the GPLv3 or later.
 // See COPYING at the root of the repository for details.
 
-import "testing"
+import (
+	"runtime"
+	"testing"
+)
 
 func TestSearchThreads(t *testing.T) {
 	db, err := Open(dbPath, DBReadOnly)
@@ -22,6 +25,10 @@ func TestSearchThreads(t *testing.T) {
 	thread := &Thread{}
 	for threads.Next(thread) {
 		count++
+		// invoke the GC to make sure it's running smoothly.
+		if count%2 == 0 {
+			runtime.GC()
+		}
 	}
 
 	if want, got := 24, count; want != got {
@@ -45,6 +52,10 @@ func TestGetNoResult(t *testing.T) {
 	thread := &Thread{}
 	for threads.Next(thread) {
 		count++
+		// invoke the GC to make sure it's running smoothly.
+		if count%2 == 0 {
+			runtime.GC()
+		}
 	}
 
 	if want, got := 0, count; want != got {
