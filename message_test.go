@@ -3,6 +3,7 @@ package notmuch
 import (
 	"path"
 	"testing"
+	"time"
 )
 
 func TestMessageID(t *testing.T) {
@@ -160,5 +161,31 @@ func TestMessageFilenames(t *testing.T) {
 
 	if want, got := 2, count; want != got {
 		t.Errorf("msg.Filenames(): want %d filename got %d", want, got)
+	}
+}
+
+func TestMessageDate(t *testing.T) {
+	db, err := Open(dbPath, DBReadOnly)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	qs := "id:20091117232137.GA7669@griffis1.net"
+	threads, err := db.NewQuery(qs).Threads()
+	if err != nil {
+		t.Fatalf("error getting the threads: %s", err)
+	}
+	thread := &Thread{}
+	if !threads.Next(thread) {
+		t.Fatalf("threads.Next(thread): unable to fetch the first and only thread")
+	}
+	msgs := thread.Messages()
+	msg := &Message{}
+	if !msgs.Next(msg) {
+		t.Fatalf("msgs.Next(msg): unable to fetch the first message in the thread")
+	}
+	if want, got := time.Unix(1258500098, 0), msg.Date(); want.Unix() != got.Unix() {
+		t.Errorf("msg.Date(): want %s got %s", want, got)
 	}
 }
