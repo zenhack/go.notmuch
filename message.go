@@ -9,6 +9,7 @@ package notmuch
 // #include <notmuch.h>
 import "C"
 import (
+	"runtime"
 	"time"
 	"unsafe"
 )
@@ -73,4 +74,18 @@ func (m *Message) Header(name string) string {
 	defer C.free(unsafe.Pointer(cname))
 
 	return C.GoString(C.notmuch_message_get_header(m.cptr, cname))
+}
+
+// Tags returns the tags for the current message, returning a *Tags which can
+// be used to iterate over all tags using `Tags.Next(Tag)`
+func (m *Message) Tags() *Tags {
+	ts := &Tags{
+		cptr:    C.notmuch_message_get_tags(m.cptr),
+		message: m,
+		thread:  m.thread,
+	}
+	runtime.SetFinalizer(ts, func(ts *Tags) {
+		C.notmuch_tags_destroy(ts.cptr)
+	})
+	return ts
 }

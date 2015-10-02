@@ -11,8 +11,9 @@ import "C"
 
 // Tags represent a notmuch tags type.
 type Tags struct {
-	cptr   *C.notmuch_tags_t
-	thread *Thread
+	cptr    *C.notmuch_tags_t
+	thread  *Thread
+	message *Message
 }
 
 // Next retrieves the next tag from the result set. Next returns true if a tag
