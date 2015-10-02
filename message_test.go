@@ -189,3 +189,33 @@ func TestMessageDate(t *testing.T) {
 		t.Errorf("msg.Date(): want %s got %s", want, got)
 	}
 }
+
+func TestMessageHeader(t *testing.T) {
+	db, err := Open(dbPath, DBReadOnly)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	qs := "id:1258471718-6781-2-git-send-email-dottedmag@dottedmag.net"
+	threads, err := db.NewQuery(qs).Threads()
+	if err != nil {
+		t.Fatalf("error getting the threads: %s", err)
+	}
+	thread := &Thread{}
+	if !threads.Next(thread) {
+		t.Fatalf("threads.Next(thread): unable to fetch the first and only thread")
+	}
+	msgs := thread.Messages()
+	msg := &Message{}
+	for msgs.Next(msg) {
+		if msg.ID() == "1258471718-6781-2-git-send-email-dottedmag@dottedmag.net" {
+			break
+		}
+	}
+	for _, hn := range []string{"References", "references"} {
+		if want, got := "<1258471718-6781-1-git-send-email-dottedmag@dottedmag.net>", msg.Header(hn); want != got {
+			t.Errorf("msg.Header(%q): want %s got %s", hn, want, got)
+		}
+	}
+}

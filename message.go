@@ -66,3 +66,11 @@ func (m *Message) Date() time.Time {
 	ctime := C.notmuch_message_get_date(m.cptr)
 	return time.Unix(int64(ctime), 0)
 }
+
+// Header returns the value of the header.
+func (m *Message) Header(name string) string {
+	cname := C.CString(name)
+	defer C.free(unsafe.Pointer(cname))
+
+	return C.GoString(C.notmuch_message_get_header(m.cptr, cname))
+}
