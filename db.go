@@ -81,8 +81,7 @@ func Compact(path, backup string) error {
 
 // Atomic opens an atomic transaction in the database and calls the callback.
 func (db *DB) Atomic(callback func(*DB)) error {
-	cerr := C.notmuch_database_begin_atomic(db.cptr)
-	if err := statusErr(cerr); err != nil {
+	if err := statusErr(C.notmuch_database_begin_atomic(db.cptr)); err != nil {
 		return err
 	}
 	callback(db)
