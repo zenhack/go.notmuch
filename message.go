@@ -8,7 +8,10 @@ package notmuch
 // #include <stdlib.h>
 // #include <notmuch.h>
 import "C"
-import "unsafe"
+import (
+	"time"
+	"unsafe"
+)
 
 // Message represents a notmuch message.
 type Message struct {
@@ -56,4 +59,10 @@ func (m *Message) Filenames() *Filenames {
 		cptr:    C.notmuch_message_get_filenames(m.cptr),
 		message: m,
 	}
+}
+
+// Date returns the date of the message.
+func (m *Message) Date() time.Time {
+	ctime := C.notmuch_message_get_date(m.cptr)
+	return time.Unix(int64(ctime), 0)
 }
