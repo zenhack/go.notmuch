@@ -10,7 +10,6 @@ package notmuch
 import "C"
 
 import (
-	"runtime"
 	"unsafe"
 )
 
@@ -43,9 +42,6 @@ func Create(path string) (*DB, error) {
 	db := &DB{}
 	cdb := (**C.notmuch_database_t)(unsafe.Pointer(&db.cptr))
 	cerr := C.notmuch_database_create(cpath, cdb)
-	runtime.SetFinalizer(db, func(db *DB) {
-		C.notmuch_database_destroy(db.cptr)
-	})
 	return db, statusErr(cerr)
 }
 
@@ -59,9 +55,6 @@ func Open(path string, mode DBMode) (*DB, error) {
 	db := &DB{}
 	cdb := (**C.notmuch_database_t)(unsafe.Pointer(&db.cptr))
 	cerr := C.notmuch_database_open(cpath, cmode, cdb)
-	runtime.SetFinalizer(db, func(db *DB) {
-		C.notmuch_database_destroy(db.cptr)
-	})
 	return db, statusErr(cerr)
 }
 
@@ -98,15 +91,12 @@ func (db *DB) NewQuery(queryString string) *Query {
 		cptr: cquery,
 		db:   db,
 	}
-	runtime.SetFinalizer(query, func(q *Query) {
-		C.notmuch_query_destroy(q.cptr)
-	})
 	return query
 }
 
 // Close closes the database.
 func (db *DB) Close() error {
-	cerr := C.notmuch_database_close(db.cptr)
+	cerr := C.notmuch_database_destroy(db.cptr)
 	err := statusErr(cerr)
 	return err
 }
@@ -153,9 +143,6 @@ func (db *DB) AddMessage(filename string) (*Message, error) {
 	if err := statusErr(C.notmuch_database_add_message(db.cptr, cfilename, cmsg)); err != nil {
 		return nil, err
 	}
-	runtime.SetFinalizer(msg, func(m *Message) {
-		C.notmuch_message_destroy(m.cptr)
-	})
 	return msg, nil
 }
 
@@ -181,9 +168,6 @@ func (db *DB) FindMessage(id string) (*Message, error) {
 	if msg.cptr == nil {
 		return nil, ErrNotFound
 	}
-	runtime.SetFinalizer(msg, func(m *Message) {
-		C.notmuch_message_destroy(m.cptr)
-	})
 	return msg, nil
 }
 
@@ -200,9 +184,6 @@ func (db *DB) FindMessageByFilename(filename string) (*Message, error) {
 	if msg.cptr == nil {
 		return nil, ErrNotFound
 	}
-	runtime.SetFinalizer(msg, func(m *Message) {
-		C.notmuch_message_destroy(m.cptr)
-	})
 	return msg, nil
 }
 
@@ -215,9 +196,5 @@ func (db *DB) Tags() (*Tags, error) {
 	tags := &Tags{
 		cptr: ctags,
 	}
-	runtime.SetFinalizer(tags, func(t *Tags) {
-		C.notmuch_tags_destroy(tags.cptr)
-	})
-
 	return tags, nil
 }

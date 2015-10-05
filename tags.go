@@ -40,3 +40,13 @@ func (ts *Tags) valid() bool {
 	cbool := C.notmuch_tags_valid(ts.cptr)
 	return int(cbool) != 0
 }
+
+// Destroy a Tags object.
+//
+// It's not strictly necessary to call this method. All memory from
+// the Tags object will be reclaimed when the containing message or
+// query objects are destroyed.
+func (ts *Tags) Close() error {
+	C.notmuch_tags_destroy(ts.cptr)
+	return nil
+}

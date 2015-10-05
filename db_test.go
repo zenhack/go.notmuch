@@ -150,6 +150,7 @@ func TestAddMessage(t *testing.T) {
 	if msg == nil {
 		t.Errorf("expecting msg to not be nil")
 	}
+	msg.Close()
 }
 
 func testFindMessage(t *testing.T, db *DB, id string) {
@@ -157,6 +158,7 @@ func testFindMessage(t *testing.T, db *DB, id string) {
 	if err != nil {
 		t.Fatalf("db.FindMessage(%q): unexpected error: %s", id, err)
 	}
+	defer msg.Close()
 	if want, got := id, msg.ID(); want != got {
 		t.Errorf("db.FindMessage(%q).ID(): want %s got %s", id, want, got)
 	}
@@ -206,6 +208,7 @@ func TestFindMessageByFilename(t *testing.T) {
 	if err != nil {
 		t.Fatalf("db.FindMessageByFilename(%q): unexpected error: %s", p, err)
 	}
+	defer msg.Close()
 	if want, got := id, msg.ID(); want != got {
 		t.Errorf("db.FindMessageByFilename(%q).ID(): want %s got %s", p, want, got)
 	}
@@ -217,8 +220,10 @@ func TestTags(t *testing.T) {
 		t.Fatalf("Open(%q): unexpected error: %s", dbPath, err)
 	}
 	defer db.Close()
-	if _, err := db.Tags(); err != nil {
+	if tags, err := db.Tags(); err != nil {
 		t.Fatalf("db.Tags(): got error %s", err)
+	} else {
+		tags.Close()
 	}
 	// TODO(kalbasit): extend the test when tags are fully implemented.
 }

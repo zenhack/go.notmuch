@@ -8,10 +8,7 @@ package notmuch
 // #include <stdlib.h>
 // #include <notmuch.h>
 import "C"
-import (
-	"runtime"
-	"unsafe"
-)
+import "unsafe"
 
 // Messages represents notmuch messages.
 type Messages struct {
@@ -45,9 +42,6 @@ func (ms *Messages) Tags() *Tags {
 	// but there's not explanation on what kind of error can occur. We should handle
 	// it as OOM for now but we eventually have to narrow it down.
 	checkOOM(unsafe.Pointer(ts.cptr))
-	runtime.SetFinalizer(ts, func(ts *Tags) {
-		C.notmuch_tags_destroy(ts.cptr)
-	})
 	return ts
 }
 
@@ -58,13 +52,20 @@ func (ms *Messages) get() *Message {
 		cptr:     cmessage,
 		messages: ms,
 	}
-	runtime.SetFinalizer(message, func(m *Message) {
-		C.notmuch_message_destroy(m.cptr)
-	})
 	return message
 }
 
 func (ms *Messages) valid() bool {
 	cbool := C.notmuch_messages_valid(ms.cptr)
 	return int(cbool) != 0
+}
+
+// Destroy a Messages object.
+//
+// It's not strictly necessary to call this function. All memory from
+// the messages object will be reclaimed when the containing
+// query object is destroyed.
+func (ms *Messages) Close() error {
+	C.notmuch_messages_destroy(ms.cptr)
+	return nil
 }

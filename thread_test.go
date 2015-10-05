@@ -22,6 +22,7 @@ func TestThreadID(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error getting the threads: %s", err)
 	}
+	defer threads.Close()
 	thread := &Thread{}
 	if !threads.Next(thread) {
 		t.Fatalf("threads.Next(thread): unable to fetch the first and only thread")
@@ -43,6 +44,8 @@ func TestCount(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error getting the threads: %s", err)
 	}
+	defer threads.Close()
+
 	thread := &Thread{}
 	if !threads.Next(thread) {
 		t.Fatalf("threads.Next(thread): unable to fetch the first and only thread")
@@ -66,6 +69,7 @@ func TestSubjectUTF8(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error getting the threads: %s", err)
 	}
+	defer threads.Close()
 	thread := &Thread{}
 	if !threads.Next(thread) {
 		t.Fatalf("threads.Next(thread): unable to fetch the first and only thread")
@@ -87,6 +91,7 @@ func TestTopLevelMessages(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error getting the threads: %s", err)
 	}
+	defer threads.Close()
 	thread := &Thread{}
 	if !threads.Next(thread) {
 		t.Fatalf("threads.Next(thread): unable to fetch the first and only thread")
@@ -121,6 +126,7 @@ func TestMessages(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error getting the threads: %s", err)
 	}
+	defer threads.Close()
 	thread := &Thread{}
 	if !threads.Next(thread) {
 		t.Fatalf("threads.Next(thread): unable to fetch the first and only thread")
@@ -197,6 +203,7 @@ func TestAuthors(t *testing.T) {
 				runtime.GC()
 			}
 		}
+		threads.Close()
 	}
 }
 

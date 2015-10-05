@@ -8,11 +8,7 @@ package notmuch
 // #include <stdlib.h>
 // #include <notmuch.h>
 import "C"
-
-import (
-	"runtime"
-	"unsafe"
-)
+import "unsafe"
 
 // Threads represents notmuch threads.
 type Threads struct {
@@ -38,13 +34,20 @@ func (ts *Threads) get() *Thread {
 		cptr:    cthread,
 		threads: ts,
 	}
-	runtime.SetFinalizer(thread, func(t *Thread) {
-		C.notmuch_thread_destroy(t.cptr)
-	})
 	return thread
 }
 
 func (ts *Threads) valid() bool {
 	cbool := C.notmuch_threads_valid(ts.cptr)
 	return int(cbool) != 0
+}
+
+// Destroy a Threads  object.
+//
+// It's not strictly necessary to call this function. All memory from
+// the Threads object will be reclaimed when the containing query
+// object is destroyed.
+func (ts *Threads) Close() error {
+	C.notmuch_threads_destroy(ts.cptr)
+	return nil
 }

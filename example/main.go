@@ -29,6 +29,9 @@ func main() {
 		return
 	}
 	defer db.Close()
+	// In a longer running program we would want to be sure to Close() the query
+	// and Threads objects, to free their memory, but since they'll both be live
+	// until we exit anyway, let's not bother.
 	threads, err := db.NewQuery(*queryString).Threads()
 	if err != nil {
 		fmt.Println(err)

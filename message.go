@@ -9,7 +9,6 @@ package notmuch
 // #include <notmuch.h>
 import "C"
 import (
-	"runtime"
 	"time"
 	"unsafe"
 )
@@ -84,9 +83,6 @@ func (m *Message) Tags() *Tags {
 		message: m,
 		thread:  m.thread,
 	}
-	runtime.SetFinalizer(ts, func(ts *Tags) {
-		C.notmuch_tags_destroy(ts.cptr)
-	})
 	return ts
 }
 
@@ -116,4 +112,17 @@ func (m *Message) Atomic(callback func(*Message)) error {
 	}
 	callback(m)
 	return statusErr(C.notmuch_message_thaw(m.cptr))
+}
+
+
+// Destroy a Message object.
+//
+// It can be useful to call this method in the case of a single
+// Query object with many messages in the result, (such as iterating
+// over the entire database). Otherwise, it's fine to never call this
+// function and there will still be no memory leaks. (The memory from
+// the messages get reclaimed when the containing query is destroyed.)
+func (m *Message) Close() error {
+	C.notmuch_message_destroy(m.cptr)
+	return nil
 }

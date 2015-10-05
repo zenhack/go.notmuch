@@ -20,6 +20,7 @@ func TestSearchThreads(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error getting the threads: %s", err)
 	}
+	defer threads.Close()
 
 	var count int
 	thread := &Thread{}
@@ -47,6 +48,7 @@ func TestGetNoResult(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error getting the threads: %s", err)
 	}
+	defer threads.Close()
 
 	var count int
 	thread := &Thread{}
@@ -71,6 +73,7 @@ func TestQueryCountMessages(t *testing.T) {
 	defer db.Close()
 
 	q := db.NewQuery("subject:\"Introducing myself\"")
+	defer q.Close()
 	if want, got := 3, q.CountMessages(); want != got {
 		t.Errorf("q.Count(): want %d got %d", want, got)
 	}
@@ -97,6 +100,7 @@ func TestString(t *testing.T) {
 	defer db.Close()
 
 	q := db.NewQuery("subject:\"Introducing myself\"")
+	defer q.Close()
 	if want, got := "subject:\"Introducing myself\"", q.String(); want != got {
 		t.Errorf("q.String(): want %s got %s", want, got)
 	}

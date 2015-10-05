@@ -8,11 +8,7 @@ package notmuch
 // #include <stdlib.h>
 // #include <notmuch.h>
 import "C"
-
-import (
-	"runtime"
-	"unsafe"
-)
+import "unsafe"
 
 // Query represents a notmuch query.
 type Query struct {
@@ -35,9 +31,6 @@ func (q *Query) Threads() (*Threads, error) {
 	if err != nil {
 		return nil, err
 	}
-	runtime.SetFinalizer(threads, func(t *Threads) {
-		C.notmuch_threads_destroy(t.cptr)
-	})
 	return threads, nil
 }
 
@@ -49,4 +42,15 @@ func (q *Query) CountThreads() int {
 // CountMessages returns the number of messages for the current query.
 func (q *Query) CountMessages() int {
 	return int(C.notmuch_query_count_messages(q.cptr))
+}
+
+// Destroy a Query along with any associated resources.
+//
+// This will in turn destroy any Threads and Messages objects generated
+// by this query, (and in turn any Thread and Message objects generated
+// from those results, etc.), if such objects haven't already been
+// destroyed.
+func (q *Query) Close() error {
+	C.notmuch_query_destroy(q.cptr)
+	return nil
 }

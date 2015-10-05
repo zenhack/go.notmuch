@@ -9,7 +9,6 @@ package notmuch
 // #include <notmuch.h>
 import "C"
 import (
-	"runtime"
 	"strings"
 	"time"
 )
@@ -107,8 +106,11 @@ func (t *Thread) Tags() *Tags {
 		cptr:   C.notmuch_thread_get_tags(t.cptr),
 		thread: t,
 	}
-	runtime.SetFinalizer(ts, func(ts *Tags) {
-		C.notmuch_tags_destroy(ts.cptr)
-	})
 	return ts
+}
+
+// Destroy a Thread object
+func (t *Thread) Close() error {
+	C.notmuch_thread_destroy(t.cptr)
+	return nil
 }
