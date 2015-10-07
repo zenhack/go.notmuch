@@ -10,7 +10,6 @@ package notmuch
 import "C"
 
 import (
-	"runtime"
 	"unsafe"
 )
 
@@ -30,23 +29,32 @@ type (
 	DBMode C.notmuch_database_mode_t
 
 	// DB represents a notmuch database.
-	DB struct {
-		cptr *C.notmuch_database_t
-	}
+	DB cStruct
 )
+
+func (db *DB) toC() *C.notmuch_database_t {
+	return (*C.notmuch_database_t)(db.cptr)
+}
+
+// Close closes the database.
+func (db *DB) Close() error {
+	return (*cStruct)(db).doClose(func() error {
+		return statusErr(C.notmuch_database_destroy(db.toC()))
+	})
+}
 
 // Create creates a new, empty notmuch database located at 'path'.
 func Create(path string) (*DB, error) {
 	cpath := C.CString(path)
 	defer C.free(unsafe.Pointer(cpath))
-
-	db := &DB{}
-	cdb := (**C.notmuch_database_t)(unsafe.Pointer(&db.cptr))
-	cerr := C.notmuch_database_create(cpath, cdb)
-	runtime.SetFinalizer(db, func(db *DB) {
-		C.notmuch_database_destroy(db.cptr)
-	})
-	return db, statusErr(cerr)
+	var cdb *C.notmuch_database_t
+	err := statusErr(C.notmuch_database_create(cpath, &cdb))
+	if err != nil {
+		return nil, err
+	}
+	db := &DB{cptr: unsafe.Pointer(cdb)}
+	setGcClose(db)
+	return db, nil
 }
 
 // Open opens the database at the location path using mode. Caller is responsible
@@ -56,13 +64,15 @@ func Open(path string, mode DBMode) (*DB, error) {
 	defer C.free(unsafe.Pointer(cpath))
 
 	cmode := C.notmuch_database_mode_t(mode)
-	db := &DB{}
-	cdb := (**C.notmuch_database_t)(unsafe.Pointer(&db.cptr))
-	cerr := C.notmuch_database_open(cpath, cmode, cdb)
-	runtime.SetFinalizer(db, func(db *DB) {
-		C.notmuch_database_destroy(db.cptr)
-	})
-	return db, statusErr(cerr)
+	var cdb *C.notmuch_database_t
+	cdbptr := (**C.notmuch_database_t)(&cdb)
+	err := statusErr(C.notmuch_database_open(cpath, cmode, cdbptr))
+	if err != nil {
+		return nil, err
+	}
+	db := &DB{cptr: unsafe.Pointer(cdb)}
+	setGcClose(db)
+	return db, nil
 }
 
 // Compact compacts a notmuch database, backing up the original database to the
@@ -81,49 +91,39 @@ func Compact(path, backup string) error {
 
 // Atomic opens an atomic transaction in the database and calls the callback.
 func (db *DB) Atomic(callback func(*DB)) error {
-	if err := statusErr(C.notmuch_database_begin_atomic(db.cptr)); err != nil {
+	if err := statusErr(C.notmuch_database_begin_atomic(db.toC())); err != nil {
 		return err
 	}
 	callback(db)
-	return statusErr(C.notmuch_database_end_atomic(db.cptr))
+	return statusErr(C.notmuch_database_end_atomic(db.toC()))
 }
 
 // NewQuery creates a new query from a string following xapian format.
 func (db *DB) NewQuery(queryString string) *Query {
 	cstr := C.CString(queryString)
 	defer C.free(unsafe.Pointer(cstr))
-	cquery := C.notmuch_query_create(db.cptr, cstr)
+	cquery := C.notmuch_query_create(db.toC(), cstr)
 	query := &Query{
-		qs:   queryString,
-		cptr: cquery,
-		db:   db,
+		cptr: unsafe.Pointer(cquery),
+		parent: (*cStruct)(db),
 	}
-	runtime.SetFinalizer(query, func(q *Query) {
-		C.notmuch_query_destroy(q.cptr)
-	})
+	setGcClose(query)
 	return query
-}
-
-// Close closes the database.
-func (db *DB) Close() error {
-	cerr := C.notmuch_database_close(db.cptr)
-	err := statusErr(cerr)
-	return err
 }
 
 // Version returns the database version.
 func (db *DB) Version() int {
-	return int(C.notmuch_database_get_version(db.cptr))
+	return int(C.notmuch_database_get_version(db.toC()))
 }
 
 // LastStatus retrieves last status string for the notmuch database.
 func (db *DB) LastStatus() string {
-	return C.GoString(C.notmuch_database_status_string(db.cptr))
+	return C.GoString(C.notmuch_database_status_string(db.toC()))
 }
 
 // Path returns the database path of the database.
 func (db *DB) Path() string {
-	return C.GoString(C.notmuch_database_get_path(db.cptr))
+	return C.GoString(C.notmuch_database_get_path(db.toC()))
 }
 
 // NeedsUpgrade returns true if the database can be upgraded. This will always
@@ -132,14 +132,14 @@ func (db *DB) Path() string {
 // If this function returns true then the caller may call
 // Upgrade() to upgrade the database.
 func (db *DB) NeedsUpgrade() bool {
-	cbool := C.notmuch_database_needs_upgrade(db.cptr)
+	cbool := C.notmuch_database_needs_upgrade(db.toC())
 	return int(cbool) != 0
 }
 
 // Upgrade upgrades the current database to the latest supported version. The
 // database must be opened with DBReadWrite.
 func (db *DB) Upgrade() error {
-	return statusErr(C.notmuch_database_upgrade(db.cptr, nil, nil))
+	return statusErr(C.notmuch_database_upgrade(db.toC(), nil, nil))
 }
 
 // AddMessage adds a new message to the current database or associate an
@@ -148,14 +148,15 @@ func (db *DB) AddMessage(filename string) (*Message, error) {
 	cfilename := C.CString(filename)
 	defer C.free(unsafe.Pointer(cfilename))
 
-	msg := &Message{}
-	cmsg := (**C.notmuch_message_t)(unsafe.Pointer(&msg.cptr))
-	if err := statusErr(C.notmuch_database_add_message(db.cptr, cfilename, cmsg)); err != nil {
+	var cmsg *C.notmuch_message_t
+	if err := statusErr(C.notmuch_database_add_message(db.toC(), cfilename, &cmsg)); err != nil {
 		return nil, err
 	}
-	runtime.SetFinalizer(msg, func(m *Message) {
-		C.notmuch_message_destroy(m.cptr)
-	})
+	msg := &Message{
+		cptr: unsafe.Pointer(cmsg),
+		parent: (*cStruct)(db),
+	}
+	setGcClose(msg)
 	return msg, nil
 }
 
@@ -165,25 +166,25 @@ func (db *DB) RemoveMessage(filename string) error {
 	cfilename := C.CString(filename)
 	defer C.free(unsafe.Pointer(cfilename))
 
-	return statusErr(C.notmuch_database_remove_message(db.cptr, cfilename))
+	return statusErr(C.notmuch_database_remove_message(db.toC(), cfilename))
 }
 
 // FindMessage finds a message with the given message_id.
 func (db *DB) FindMessage(id string) (*Message, error) {
 	cid := C.CString(id)
 	defer C.free(unsafe.Pointer(cid))
-
-	msg := &Message{}
-	cmsg := (**C.notmuch_message_t)(unsafe.Pointer(&msg.cptr))
-	if err := statusErr(C.notmuch_database_find_message(db.cptr, cid, cmsg)); err != nil {
+	var cmsg *C.notmuch_message_t
+	if err := statusErr(C.notmuch_database_find_message(db.toC(), cid, &cmsg)); err != nil {
 		return nil, err
 	}
-	if msg.cptr == nil {
+	if cmsg == nil {
 		return nil, ErrNotFound
 	}
-	runtime.SetFinalizer(msg, func(m *Message) {
-		C.notmuch_message_destroy(m.cptr)
-	})
+	msg := &Message{
+		cptr: unsafe.Pointer(cmsg),
+		parent: (*cStruct)(db),
+	}
+	setGcClose(msg)
 	return msg, nil
 }
 
@@ -192,32 +193,31 @@ func (db *DB) FindMessageByFilename(filename string) (*Message, error) {
 	cfilename := C.CString(filename)
 	defer C.free(unsafe.Pointer(cfilename))
 
-	msg := &Message{}
-	cmsg := (**C.notmuch_message_t)(unsafe.Pointer(&msg.cptr))
-	if err := statusErr(C.notmuch_database_find_message_by_filename(db.cptr, cfilename, cmsg)); err != nil {
+	var cmsg *C.notmuch_message_t
+	if err := statusErr(C.notmuch_database_find_message_by_filename(db.toC(), cfilename, &cmsg)); err != nil {
 		return nil, err
 	}
-	if msg.cptr == nil {
+	if cmsg == nil {
 		return nil, ErrNotFound
 	}
-	runtime.SetFinalizer(msg, func(m *Message) {
-		C.notmuch_message_destroy(m.cptr)
-	})
+	msg := &Message{
+		cptr: unsafe.Pointer(cmsg),
+		parent: (*cStruct)(db),
+	}
+	setGcClose(msg)
 	return msg, nil
 }
 
 // Tags returns the list of all tags in the database.
 func (db *DB) Tags() (*Tags, error) {
-	ctags := C.notmuch_database_get_all_tags(db.cptr)
+	ctags := C.notmuch_database_get_all_tags(db.toC())
 	if ctags == nil {
 		return nil, ErrUnknownError
 	}
 	tags := &Tags{
-		cptr: ctags,
+		cptr: unsafe.Pointer(ctags),
+		parent: (*cStruct)(db),
 	}
-	runtime.SetFinalizer(tags, func(t *Tags) {
-		C.notmuch_tags_destroy(tags.cptr)
-	})
-
+	setGcClose(tags)
 	return tags, nil
 }

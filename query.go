@@ -9,44 +9,48 @@ package notmuch
 // #include <notmuch.h>
 import "C"
 
-import (
-	"runtime"
-	"unsafe"
-)
+import "unsafe"
 
 // Query represents a notmuch query.
-type Query struct {
-	qs   string
-	cptr *C.notmuch_query_t
-	db   *DB
+type Query cStruct
+
+func (q *Query) Close() error {
+	return (*cStruct)(q).doClose(func () error {
+		C.notmuch_query_destroy(q.toC())
+		return nil
+	})
+}
+
+func (q *Query) toC() *C.notmuch_query_t {
+	return (*C.notmuch_query_t)(q.cptr)
 }
 
 // String returns the query as a string, implements fmt.Stringer.
 func (q *Query) String() string {
-	return q.qs
+	return C.GoString(C.notmuch_query_get_query_string(q.toC()))
 }
 
 // Threads returns the threads matching the query.
 func (q *Query) Threads() (*Threads, error) {
-	threads := &Threads{query: q}
-	cthreads := (**C.notmuch_threads_t)(unsafe.Pointer(&threads.cptr))
-	cerr := C.notmuch_query_search_threads_st(q.cptr, cthreads)
-	err := statusErr(cerr)
+	var cthreads *C.notmuch_threads_t
+	err := statusErr(C.notmuch_query_search_threads_st(q.toC(), &cthreads))
 	if err != nil {
 		return nil, err
 	}
-	runtime.SetFinalizer(threads, func(t *Threads) {
-		C.notmuch_threads_destroy(t.cptr)
-	})
+	threads := &Threads{
+		cptr: unsafe.Pointer(cthreads),
+		parent: (*cStruct)(q),
+	}
+	setGcClose(threads)
 	return threads, nil
 }
 
 // CountThreads returns the number of messages for the current query.
 func (q *Query) CountThreads() int {
-	return int(C.notmuch_query_count_threads(q.cptr))
+	return int(C.notmuch_query_count_threads(q.toC()))
 }
 
 // CountMessages returns the number of messages for the current query.
 func (q *Query) CountMessages() int {
-	return int(C.notmuch_query_count_messages(q.cptr))
+	return int(C.notmuch_query_count_messages(q.toC()))
 }

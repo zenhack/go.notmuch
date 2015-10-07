@@ -82,12 +82,12 @@ func TestTopLevelMessages(t *testing.T) {
 		t.Fatal(err)
 	}
 	msgs := thread.TopLevelMessages()
-	if want, got := thread.cptr, msgs.thread.cptr; want != got {
-		t.Errorf("thread.Message().thread: want %s got %s", want, got)
-	}
 	message := &Message{}
 	var count int
 	for msgs.Next(message) {
+		if want, got := thread.ID(), message.ThreadID(); want != got {
+			t.Errorf("thread.TopLevelMessages()[n]: want %s got %s", want, got)
+		}
 		count++
 		// invoke the GC to make sure it's running smoothly.
 		if count%2 == 0 {
@@ -112,12 +112,12 @@ func TestMessages(t *testing.T) {
 		t.Fatal(err)
 	}
 	msgs := thread.Messages()
-	if want, got := thread.cptr, msgs.thread.cptr; want != got {
-		t.Errorf("thread.Message().thread: want %s got %s", want, got)
-	}
 	message := &Message{}
 	var count int
 	for msgs.Next(message) {
+		if want, got := thread.ID(), message.ThreadID(); want != got {
+			t.Errorf("thread.Messages()[n]: want %s got %s", want, got)
+		}
 		count++
 		// invoke the GC to make sure it's running smoothly.
 		if count%2 == 0 {

@@ -8,57 +8,70 @@ package notmuch
 // #include <stdlib.h>
 // #include <notmuch.h>
 import "C"
+
 import (
-	"runtime"
 	"strings"
 	"time"
+	"unsafe"
 )
 
 // Thread represents a notmuch thread.
-type Thread struct {
-	cptr    *C.notmuch_thread_t
-	threads *Threads
+type Thread cStruct
+
+func (t *Thread) toC() *C.notmuch_thread_t {
+	return (*C.notmuch_thread_t)(t.cptr)
+}
+
+func (t *Thread) Close() error {
+	return (*cStruct)(t).doClose(func() error {
+		C.notmuch_thread_destroy(t.toC())
+		return nil
+	})
 }
 
 // Subject returns the subject of a thread.
 func (t *Thread) Subject() string {
-	cstr := C.notmuch_thread_get_subject(t.cptr)
+	cstr := C.notmuch_thread_get_subject(t.toC())
 	str := C.GoString(cstr)
 	return str
 }
 
 // ID returns the ID of the thread.
 func (t *Thread) ID() string {
-	return C.GoString(C.notmuch_thread_get_thread_id(t.cptr))
+	return C.GoString(C.notmuch_thread_get_thread_id(t.toC()))
 }
 
 // Count returns the total number of messages in the current thread.
 func (t *Thread) Count() int {
-	return int(C.notmuch_thread_get_total_messages(t.cptr))
+	return int(C.notmuch_thread_get_total_messages(t.toC()))
 }
 
 // CountMatched returns the total number of messages in the current thread that
 // matched the search.
 func (t *Thread) CountMatched() int {
-	return int(C.notmuch_thread_get_matched_messages(t.cptr))
+	return int(C.notmuch_thread_get_matched_messages(t.toC()))
 }
 
 // TopLevelMessages returns an iterator for the top-level messages in the
 // current thread in oldest-first order.
 func (t *Thread) TopLevelMessages() *Messages {
-	return &Messages{
-		thread: t,
-		cptr:   C.notmuch_thread_get_toplevel_messages(t.cptr),
+	ret := &Messages{
+		cptr: unsafe.Pointer(C.notmuch_thread_get_toplevel_messages(t.toC())),
+		parent: (*cStruct)(t),
 	}
+	setGcClose(ret)
+	return ret
 }
 
 // Messages returns an iterator for all messages in the current thread in
 // oldest-first order.
 func (t *Thread) Messages() *Messages {
-	return &Messages{
-		thread: t,
-		cptr:   C.notmuch_thread_get_messages(t.cptr),
+	msgs := &Messages{
+		cptr: unsafe.Pointer(C.notmuch_thread_get_messages(t.toC())),
+		parent: (*cStruct)(t),
 	}
+	setGcClose(msgs)
+	return msgs
 }
 
 // Authors returns the list of authors, the first are the authors that matched
@@ -67,7 +80,7 @@ func (t *Thread) Messages() *Messages {
 func (t *Thread) Authors() ([]string, []string) {
 	var matched, unmatched []string
 
-	as := C.GoString(C.notmuch_thread_get_authors(t.cptr))
+	as := C.GoString(C.notmuch_thread_get_authors(t.toC()))
 	munm := strings.Split(as, "|")
 	if len(munm) > 1 {
 		matched = strings.Split(munm[0], ",")
@@ -86,13 +99,13 @@ func (t *Thread) Authors() ([]string, []string) {
 
 // OldestDate returns the date of the oldest message in the thread.
 func (t *Thread) OldestDate() time.Time {
-	ctime := C.notmuch_thread_get_oldest_date(t.cptr)
+	ctime := C.notmuch_thread_get_oldest_date(t.toC())
 	return time.Unix(int64(ctime), 0)
 }
 
 // NewestDate returns the date of the oldest message in the thread.
 func (t *Thread) NewestDate() time.Time {
-	ctime := C.notmuch_thread_get_newest_date(t.cptr)
+	ctime := C.notmuch_thread_get_newest_date(t.toC())
 	return time.Unix(int64(ctime), 0)
 }
 
@@ -103,12 +116,11 @@ func (t *Thread) NewestDate() time.Time {
 // on threads. So the tags returned here will be all tags of the messages which
 // matched the search and which belong to this thread.
 func (t *Thread) Tags() *Tags {
-	ts := &Tags{
-		cptr:   C.notmuch_thread_get_tags(t.cptr),
-		thread: t,
+	ctags := C.notmuch_thread_get_tags(t.toC())
+	tags := &Tags{
+		cptr: unsafe.Pointer(ctags),
+		parent: (*cStruct)(t),
 	}
-	runtime.SetFinalizer(ts, func(ts *Tags) {
-		C.notmuch_tags_destroy(ts.cptr)
-	})
-	return ts
+	setGcClose(tags)
+	return tags
 }

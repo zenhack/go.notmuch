@@ -9,15 +9,20 @@ package notmuch
 // #include <notmuch.h>
 import "C"
 
-import (
-	"runtime"
-	"unsafe"
-)
+import "unsafe"
 
 // Threads represents notmuch threads.
-type Threads struct {
-	cptr  *C.notmuch_threads_t
-	query *Query
+type Threads cStruct
+
+func (ts *Threads) toC() *C.notmuch_threads_t {
+	return (*C.notmuch_threads_t)(ts.cptr)
+}
+
+func (ts *Threads) Close() error {
+	return (*cStruct)(ts).doClose(func() error {
+		C.notmuch_threads_destroy(ts.toC())
+		return nil
+	})
 }
 
 // Next retrieves the next thread from the result set. Next returns true if a thread
@@ -27,24 +32,22 @@ func (ts *Threads) Next(t *Thread) bool {
 		return false
 	}
 	*t = *ts.get()
-	C.notmuch_threads_move_to_next(ts.cptr)
+	C.notmuch_threads_move_to_next(ts.toC())
 	return true
 }
 
 func (ts *Threads) get() *Thread {
-	cthread := C.notmuch_threads_get(ts.cptr)
+	cthread := C.notmuch_threads_get(ts.toC())
 	checkOOM(unsafe.Pointer(cthread))
 	thread := &Thread{
-		cptr:    cthread,
-		threads: ts,
+		cptr: unsafe.Pointer(cthread),
+		parent: (*cStruct)(ts),
 	}
-	runtime.SetFinalizer(thread, func(t *Thread) {
-		C.notmuch_thread_destroy(t.cptr)
-	})
+	setGcClose(thread)
 	return thread
 }
 
 func (ts *Threads) valid() bool {
-	cbool := C.notmuch_threads_valid(ts.cptr)
+	cbool := C.notmuch_threads_valid(ts.toC())
 	return int(cbool) != 0
 }

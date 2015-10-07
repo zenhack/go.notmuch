@@ -9,14 +9,21 @@ package notmuch
 // #include <notmuch.h>
 import "C"
 import (
-	"runtime"
 	"unsafe"
 )
 
 // Messages represents notmuch messages.
-type Messages struct {
-	cptr   *C.notmuch_messages_t
-	thread *Thread
+type Messages cStruct
+
+func (ms *Messages) Close() error {
+	return (*cStruct)(ms).doClose(func() error {
+		C.notmuch_messages_destroy(ms.toC())
+		return nil
+	})
+}
+
+func (ms *Messages) toC() *C.notmuch_messages_t {
+	return (*C.notmuch_messages_t)(ms.cptr)
 }
 
 // Next retrieves the next message from the result set. Next returns true if a message
@@ -26,7 +33,7 @@ func (ms *Messages) Next(m *Message) bool {
 		return false
 	}
 	*m = *ms.get()
-	C.notmuch_messages_move_to_next(ms.cptr)
+	C.notmuch_messages_move_to_next(ms.toC())
 	return true
 }
 
@@ -37,34 +44,31 @@ func (ms *Messages) Next(m *Message) bool {
 // have a function to reset the iterator yet and the only way how you can
 // iterate over the list again is to recreate the message list.
 func (ms *Messages) Tags() *Tags {
-	ts := &Tags{
-		cptr:   C.notmuch_messages_collect_tags(ms.cptr),
-		thread: ms.thread,
-	}
+	ctags := C.notmuch_messages_collect_tags(ms.toC())
 	// TODO(kalbasit): notmuch_messages_collect_tags can return NULL on error
 	// but there's not explanation on what kind of error can occur. We should handle
 	// it as OOM for now but we eventually have to narrow it down.
-	checkOOM(unsafe.Pointer(ts.cptr))
-	runtime.SetFinalizer(ts, func(ts *Tags) {
-		C.notmuch_tags_destroy(ts.cptr)
-	})
-	return ts
+	checkOOM(unsafe.Pointer(ctags))
+	tags := &Tags{
+		cptr: unsafe.Pointer(ctags),
+		parent: ms.parent,
+	}
+	setGcClose(tags)
+	return tags
 }
 
 func (ms *Messages) get() *Message {
-	cmessage := C.notmuch_messages_get(ms.cptr)
+	cmessage := C.notmuch_messages_get(ms.toC())
 	checkOOM(unsafe.Pointer(cmessage))
 	message := &Message{
-		cptr:     cmessage,
-		messages: ms,
+		cptr: unsafe.Pointer(cmessage),
+		parent: (*cStruct)(ms),
 	}
-	runtime.SetFinalizer(message, func(m *Message) {
-		C.notmuch_message_destroy(m.cptr)
-	})
+	setGcClose(message)
 	return message
 }
 
 func (ms *Messages) valid() bool {
-	cbool := C.notmuch_messages_valid(ms.cptr)
+	cbool := C.notmuch_messages_valid(ms.toC())
 	return int(cbool) != 0
 }
