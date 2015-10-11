@@ -5,6 +5,7 @@ package notmuch
 // See COPYING at the root of the repository for details.
 
 import (
+	"errors"
 	"reflect"
 	"testing"
 	"time"
@@ -17,16 +18,13 @@ func TestThreadID(t *testing.T) {
 	}
 	defer db.Close()
 
-	threads, err := db.NewQuery("Essai accentué").Threads()
+	qs := "Essai accentué"
+	thread, err := firstThread(db, qs)
 	if err != nil {
-		t.Fatalf("error getting the threads: %s", err)
-	}
-	thread := &Thread{}
-	if !threads.Next(thread) {
-		t.Fatalf("threads.Next(thread): unable to fetch the first and only thread")
+		t.Fatal(err)
 	}
 	if want, got := "0000000000000014", thread.ID(); want != got {
-		t.Errorf("db.NewQuery(%q).Threads()[0].ID(): want %s got %s", "Essai accentué", want, got)
+		t.Errorf("db.NewQuery(%q).Threads()[0].ID(): want %s got %s", qs, want, got)
 	}
 }
 
@@ -38,13 +36,9 @@ func TestCount(t *testing.T) {
 	defer db.Close()
 
 	qs := "subject:\"Introducing myself\" Hello"
-	threads, err := db.NewQuery(qs).Threads()
+	thread, err := firstThread(db, qs)
 	if err != nil {
-		t.Fatalf("error getting the threads: %s", err)
-	}
-	thread := &Thread{}
-	if !threads.Next(thread) {
-		t.Fatalf("threads.Next(thread): unable to fetch the first and only thread")
+		t.Fatal(err)
 	}
 	if want, got := 3, thread.Count(); want != got {
 		t.Errorf("db.NewQuery(%q).Threads()[0].Count(): want %d got %d", qs, want, got)
@@ -82,13 +76,9 @@ func TestTopLevelMessages(t *testing.T) {
 	defer db.Close()
 
 	qs := "subject:\"Introducing myself\""
-	threads, err := db.NewQuery(qs).Threads()
+	thread, err := firstThread(db, qs)
 	if err != nil {
-		t.Fatalf("error getting the threads: %s", err)
-	}
-	thread := &Thread{}
-	if !threads.Next(thread) {
-		t.Fatalf("threads.Next(thread): unable to fetch the first and only thread")
+		t.Fatal(err)
 	}
 	msgs := thread.TopLevelMessages()
 	if want, got := thread.cptr, msgs.thread.cptr; want != got {
@@ -112,13 +102,9 @@ func TestMessages(t *testing.T) {
 	defer db.Close()
 
 	qs := "subject:\"Introducing myself\""
-	threads, err := db.NewQuery(qs).Threads()
+	thread, err := firstThread(db, qs)
 	if err != nil {
-		t.Fatalf("error getting the threads: %s", err)
-	}
-	thread := &Thread{}
-	if !threads.Next(thread) {
-		t.Fatalf("threads.Next(thread): unable to fetch the first and only thread")
+		t.Fatal(err)
 	}
 	msgs := thread.Messages()
 	if want, got := thread.cptr, msgs.thread.cptr; want != got {
@@ -194,13 +180,9 @@ func TestOldestDate(t *testing.T) {
 	defer db.Close()
 
 	qs := "subject:\"Introducing myself\""
-	threads, err := db.NewQuery(qs).Threads()
+	thread, err := firstThread(db, qs)
 	if err != nil {
-		t.Fatalf("error getting the threads: %s", err)
-	}
-	thread := &Thread{}
-	if !threads.Next(thread) {
-		t.Fatalf("threads.Next(thread): unable to fetch the first and only thread")
+		t.Fatal(err)
 	}
 	if want, got := time.Unix(1258500059, 0), thread.OldestDate(); want.Unix() != got.Unix() {
 		t.Errorf("thread.OldestDate(): want %s got %s", want, got)
@@ -215,13 +197,9 @@ func TestNewestDate(t *testing.T) {
 	defer db.Close()
 
 	qs := "subject:\"Introducing myself\""
-	threads, err := db.NewQuery(qs).Threads()
+	thread, err := firstThread(db, qs)
 	if err != nil {
-		t.Fatalf("error getting the threads: %s", err)
-	}
-	thread := &Thread{}
-	if !threads.Next(thread) {
-		t.Fatalf("threads.Next(thread): unable to fetch the first and only thread")
+		t.Fatal(err)
 	}
 	if want, got := time.Unix(1258542931, 0), thread.NewestDate(); want.Unix() != got.Unix() {
 		t.Errorf("thread.NewestDate(): want %s got %s", want, got)
@@ -236,13 +214,9 @@ func TestThreadTags(t *testing.T) {
 	defer db.Close()
 
 	qs := "subject:\"Introducing myself\""
-	threads, err := db.NewQuery(qs).Threads()
+	thread, err := firstThread(db, qs)
 	if err != nil {
-		t.Fatalf("error getting the threads: %s", err)
-	}
-	thread := &Thread{}
-	if !threads.Next(thread) {
-		t.Fatalf("threads.Next(thread): unable to fetch the first and only thread")
+		t.Fatal(err)
 	}
 	ts := thread.Tags()
 	tag := &Tag{}
@@ -253,4 +227,16 @@ func TestThreadTags(t *testing.T) {
 	if want, got := []string{"inbox", "signed", "unread"}, tags; !reflect.DeepEqual(want, got) {
 		t.Errorf("thread.Tags(): want %v got %v", want, got)
 	}
+}
+
+func firstThread(db *DB, qs string) (*Thread, error) {
+	threads, err := db.NewQuery(qs).Threads()
+	if err != nil {
+		return nil, err
+	}
+	thread := &Thread{}
+	if !threads.Next(thread) {
+		return nil, errors.New("threads.Next(thread): unable to fetch the first thread")
+	}
+	return thread, nil
 }

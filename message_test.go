@@ -14,14 +14,9 @@ func TestMessageID(t *testing.T) {
 	}
 	defer db.Close()
 
-	qs := "subject:\"Introducing myself\""
-	threads, err := db.NewQuery(qs).Threads()
+	thread, err := firstThread(db, "subject:\"Introducing myself\"")
 	if err != nil {
-		t.Fatalf("error getting the threads: %s", err)
-	}
-	thread := &Thread{}
-	if !threads.Next(thread) {
-		t.Fatalf("threads.Next(thread): unable to fetch the first and only thread")
+		t.Fatal(err)
 	}
 	msgs := thread.Messages()
 	msg := &Message{}
@@ -40,14 +35,9 @@ func TestMessageThreadID(t *testing.T) {
 	}
 	defer db.Close()
 
-	qs := "subject:\"Introducing myself\""
-	threads, err := db.NewQuery(qs).Threads()
+	thread, err := firstThread(db, "subject:\"Introducing myself\"")
 	if err != nil {
-		t.Fatalf("error getting the threads: %s", err)
-	}
-	thread := &Thread{}
-	if !threads.Next(thread) {
-		t.Fatalf("threads.Next(thread): unable to fetch the first and only thread")
+		t.Fatal(err)
 	}
 	msgs := thread.Messages()
 	msg := &Message{}
@@ -66,14 +56,9 @@ func TestMessageReplies(t *testing.T) {
 	}
 	defer db.Close()
 
-	qs := "subject:\"Introducing myself\""
-	threads, err := db.NewQuery(qs).Threads()
+	thread, err := firstThread(db, "subject:\"Introducing myself\"")
 	if err != nil {
-		t.Fatalf("error getting the threads: %s", err)
-	}
-	thread := &Thread{}
-	if !threads.Next(thread) {
-		t.Fatalf("threads.Next(thread): unable to fetch the first and only thread")
+		t.Fatal(err)
 	}
 	msgs := thread.Messages()
 	msg := &Message{}
@@ -106,14 +91,9 @@ func TestMessageFilename(t *testing.T) {
 	}
 	defer db.Close()
 
-	qs := "subject:\"Introducing myself\""
-	threads, err := db.NewQuery(qs).Threads()
+	thread, err := firstThread(db, "subject:\"Introducing myself\"")
 	if err != nil {
-		t.Fatalf("error getting the threads: %s", err)
-	}
-	thread := &Thread{}
-	if !threads.Next(thread) {
-		t.Fatalf("threads.Next(thread): unable to fetch the first and only thread")
+		t.Fatal(err)
 	}
 	msgs := thread.Messages()
 	msg := &Message{}
@@ -138,14 +118,9 @@ func TestMessageFilenames(t *testing.T) {
 	}
 	defer db.Close()
 
-	qs := "id:20091117232137.GA7669@griffis1.net"
-	threads, err := db.NewQuery(qs).Threads()
+	thread, err := firstThread(db, "id:20091117232137.GA7669@griffis1.net")
 	if err != nil {
-		t.Fatalf("error getting the threads: %s", err)
-	}
-	thread := &Thread{}
-	if !threads.Next(thread) {
-		t.Fatalf("threads.Next(thread): unable to fetch the first and only thread")
+		t.Fatal(err)
 	}
 	msgs := thread.Messages()
 	msg := &Message{}
@@ -172,14 +147,9 @@ func TestMessageDate(t *testing.T) {
 	}
 	defer db.Close()
 
-	qs := "id:20091117232137.GA7669@griffis1.net"
-	threads, err := db.NewQuery(qs).Threads()
+	thread, err := firstThread(db, "id:20091117232137.GA7669@griffis1.net")
 	if err != nil {
-		t.Fatalf("error getting the threads: %s", err)
-	}
-	thread := &Thread{}
-	if !threads.Next(thread) {
-		t.Fatalf("threads.Next(thread): unable to fetch the first and only thread")
+		t.Fatal(err)
 	}
 	msgs := thread.Messages()
 	msg := &Message{}
@@ -198,14 +168,9 @@ func TestMessageHeader(t *testing.T) {
 	}
 	defer db.Close()
 
-	qs := "id:1258471718-6781-2-git-send-email-dottedmag@dottedmag.net"
-	threads, err := db.NewQuery(qs).Threads()
+	thread, err := firstThread(db, "id:1258471718-6781-2-git-send-email-dottedmag@dottedmag.net")
 	if err != nil {
-		t.Fatalf("error getting the threads: %s", err)
-	}
-	thread := &Thread{}
-	if !threads.Next(thread) {
-		t.Fatalf("threads.Next(thread): unable to fetch the first and only thread")
+		t.Fatal(err)
 	}
 	msgs := thread.Messages()
 	msg := &Message{}
@@ -228,14 +193,9 @@ func TestMessageTags(t *testing.T) {
 	}
 	defer db.Close()
 
-	qs := "id:1258471718-6781-2-git-send-email-dottedmag@dottedmag.net"
-	threads, err := db.NewQuery(qs).Threads()
+	thread, err := firstThread(db, "id:1258471718-6781-2-git-send-email-dottedmag@dottedmag.net")
 	if err != nil {
-		t.Fatalf("error getting the threads: %s", err)
-	}
-	thread := &Thread{}
-	if !threads.Next(thread) {
-		t.Fatalf("threads.Next(thread): unable to fetch the first and only thread")
+		t.Fatal(err)
 	}
 	msgs := thread.Messages()
 	msg := &Message{}
@@ -263,14 +223,9 @@ func TestMessageAddRemoveTagReadonlyDB(t *testing.T) {
 	}
 	defer db.Close()
 
-	qs := "id:1258471718-6781-2-git-send-email-dottedmag@dottedmag.net"
-	threads, err := db.NewQuery(qs).Threads()
+	thread, err := firstThread(db, "id:1258471718-6781-2-git-send-email-dottedmag@dottedmag.net")
 	if err != nil {
-		t.Fatalf("error getting the threads: %s", err)
-	}
-	thread := &Thread{}
-	if !threads.Next(thread) {
-		t.Fatalf("threads.Next(thread): unable to fetch the first and only thread")
+		t.Fatal(err)
 	}
 	msgs := thread.Messages()
 	msg := &Message{}
@@ -311,14 +266,9 @@ func TestMessageAddRemoveTag(t *testing.T) {
 	}
 	defer db.Close()
 
-	qs := "id:1258471718-6781-2-git-send-email-dottedmag@dottedmag.net"
-	threads, err := db.NewQuery(qs).Threads()
+	thread, err := firstThread(db, "id:1258471718-6781-2-git-send-email-dottedmag@dottedmag.net")
 	if err != nil {
-		t.Fatalf("error getting the threads: %s", err)
-	}
-	thread := &Thread{}
-	if !threads.Next(thread) {
-		t.Fatalf("threads.Next(thread): unable to fetch the first and only thread")
+		t.Fatal(err)
 	}
 	msgs := thread.Messages()
 	msg := &Message{}
@@ -387,14 +337,9 @@ func TestMessageAtomic(t *testing.T) {
 	}
 	defer db.Close()
 
-	qs := "id:1258471718-6781-2-git-send-email-dottedmag@dottedmag.net"
-	threads, err := db.NewQuery(qs).Threads()
+	thread, err := firstThread(db, "id:1258471718-6781-2-git-send-email-dottedmag@dottedmag.net")
 	if err != nil {
-		t.Fatalf("error getting the threads: %s", err)
-	}
-	thread := &Thread{}
-	if !threads.Next(thread) {
-		t.Fatalf("threads.Next(thread): unable to fetch the first and only thread")
+		t.Fatal(err)
 	}
 	msgs := thread.Messages()
 	msg := &Message{}
