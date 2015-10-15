@@ -51,7 +51,7 @@ func (ms *Messages) Tags() *Tags {
 	checkOOM(unsafe.Pointer(ctags))
 	tags := &Tags{
 		cptr: unsafe.Pointer(ctags),
-		parent: ms.parent,
+		parent: (*cStruct)(ms),
 	}
 	setGcClose(tags)
 	return tags

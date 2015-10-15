@@ -47,7 +47,7 @@ func (m *Message) Replies() (*Messages, error) {
 	// the gc reference go through this message:
 	msgs := &Messages{
 		cptr: unsafe.Pointer(cmsgs),
-		parent: m.parent,
+		parent: (*cStruct)(m),
 	}
 	setGcClose(msgs)
 	return msgs, nil
