@@ -232,14 +232,9 @@ func TestThreadTags(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	ts := thread.Tags()
-	tag := &Tag{}
-	var tags []string
-	for ts.Next(tag) {
-		tags = append(tags, tag.Value)
-		// invoke the GC to make sure it's running smoothly.
-		runtime.GC()
-	}
+	tags := thread.Tags().slice()
+	// invoke the GC to make sure it's running smoothly.
+	runtime.GC()
 	if want, got := []string{"inbox", "signed", "unread"}, tags; !reflect.DeepEqual(want, got) {
 		t.Errorf("thread.Tags(): want %v got %v", want, got)
 	}

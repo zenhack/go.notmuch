@@ -34,6 +34,16 @@ func (ts *Tags) Next(t *Tag) bool {
 	return true
 }
 
+// Return a slice of strings containing each element of ts.
+func (ts *Tags) slice() []string {
+	tag := &Tag{}
+	ret := []string{}
+	for ts.Next(tag) {
+		ret = append(ret, tag.Value)
+	}
+	return ret
+}
+
 func (ts *Tags) get() *Tag {
 	ctag := C.notmuch_tags_get(ts.toC())
 	tag := &Tag{

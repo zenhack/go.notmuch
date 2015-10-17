@@ -221,14 +221,9 @@ func TestMessageTags(t *testing.T) {
 		runtime.GC()
 	}
 
-	ts := msg.Tags()
-	tag := &Tag{}
-	var tags []string
-	for ts.Next(tag) {
-		tags = append(tags, tag.Value)
-		// invoke the GC to make sure it's running smoothly.
-		runtime.GC()
-	}
+	tags := msg.Tags().slice()
+	// invoke the GC to make sure it's running smoothly.
+	runtime.GC()
 	if want, got := []string{"inbox", "unread"}, tags; !reflect.DeepEqual(want, got) {
 		t.Errorf("msg.Tags(): want %v got %v", want, got)
 	}
@@ -255,14 +250,9 @@ func TestMessageAddRemoveTagReadonlyDB(t *testing.T) {
 		runtime.GC()
 	}
 
-	ts := msg.Tags()
-	tag := &Tag{}
-	var tags []string
-	for ts.Next(tag) {
-		tags = append(tags, tag.Value)
-		// invoke the GC to make sure it's running smoothly.
-		runtime.GC()
-	}
+	tags := msg.Tags().slice()
+	// invoke the GC to make sure it's running smoothly.
+	runtime.GC()
 	if want, got := []string{"inbox", "unread"}, tags; !reflect.DeepEqual(want, got) {
 		t.Errorf("msg.Tags(): want %v got %v", want, got)
 	}
@@ -302,14 +292,9 @@ func TestMessageAddRemoveTag(t *testing.T) {
 		runtime.GC()
 	}
 
-	ts := msg.Tags()
-	tag := &Tag{}
-	var tags []string
-	for ts.Next(tag) {
-		tags = append(tags, tag.Value)
-		// invoke the GC to make sure it's running smoothly.
-		runtime.GC()
-	}
+	tags := msg.Tags().slice()
+	// invoke the GC to make sure it's running smoothly.
+	runtime.GC()
 	if want, got := []string{"inbox", "unread"}, tags; !reflect.DeepEqual(want, got) {
 		t.Errorf("msg.Tags(): want %v got %v", want, got)
 	}
@@ -318,13 +303,10 @@ func TestMessageAddRemoveTag(t *testing.T) {
 	if err := msg.AddTag(tn); err != nil {
 		t.Fatalf("msg.AddTag(%q): got error: %s", tn, err)
 	}
-	ts = msg.Tags()
-	tags = []string{}
-	for ts.Next(tag) {
-		tags = append(tags, tag.Value)
-		// invoke the GC to make sure it's running smoothly.
-		runtime.GC()
-	}
+
+	tags = msg.Tags().slice()
+	// invoke the GC to make sure it's running smoothly.
+	runtime.GC()
 	if want, got := []string{"inbox", tn, "unread"}, tags; !reflect.DeepEqual(want, got) {
 		t.Errorf("msg.Tags(): want %v got %v", want, got)
 	}
@@ -332,13 +314,10 @@ func TestMessageAddRemoveTag(t *testing.T) {
 	if err := msg.RemoveTag(tn); err != nil {
 		t.Fatalf("msg.RemoveTag(%q): got error: %s", tn, err)
 	}
-	ts = msg.Tags()
-	tags = []string{}
-	for ts.Next(tag) {
-		tags = append(tags, tag.Value)
-		// invoke the GC to make sure it's running smoothly.
-		runtime.GC()
-	}
+
+	tags = msg.Tags().slice()
+	// invoke the GC to make sure it's running smoothly.
+	runtime.GC()
 	if want, got := []string{"inbox", "unread"}, tags; !reflect.DeepEqual(want, got) {
 		t.Errorf("msg.Tags(): want %v got %v", want, got)
 	}
@@ -346,13 +325,10 @@ func TestMessageAddRemoveTag(t *testing.T) {
 	if err := msg.RemoveAllTags(); err != nil {
 		t.Fatalf("msg.RemoveAllTag(): got error: %s", err)
 	}
-	ts = msg.Tags()
-	tags = []string{}
-	for ts.Next(tag) {
-		tags = append(tags, tag.Value)
-		// invoke the GC to make sure it's running smoothly.
-		runtime.GC()
-	}
+
+	tags = msg.Tags().slice()
+	// invoke the GC to make sure it's running smoothly.
+	runtime.GC()
 	if want, got := []string{}, tags; !reflect.DeepEqual(want, got) {
 		t.Errorf("msg.Tags(): want %v got %v", want, got)
 	}
@@ -383,14 +359,9 @@ func TestMessageAtomic(t *testing.T) {
 		runtime.GC()
 	}
 
-	ts := msg.Tags()
-	tag := &Tag{}
-	var tags []string
-	for ts.Next(tag) {
-		tags = append(tags, tag.Value)
-		// invoke the GC to make sure it's running smoothly.
-		runtime.GC()
-	}
+	tags := msg.Tags().slice()
+	// invoke the GC to make sure it's running smoothly.
+	runtime.GC()
 	if want, got := []string{"inbox", "unread"}, tags; !reflect.DeepEqual(want, got) {
 		t.Errorf("msg.Tags(): want %v got %v", want, got)
 	}
@@ -401,13 +372,10 @@ func TestMessageAtomic(t *testing.T) {
 			t.Fatalf("msg.AddTag(%q): got error: %s", tn, err)
 		}
 	})
-	ts = msg.Tags()
-	tags = []string{}
-	for ts.Next(tag) {
-		tags = append(tags, tag.Value)
-		// invoke the GC to make sure it's running smoothly.
-		runtime.GC()
-	}
+
+	tags = msg.Tags().slice()
+	// invoke the GC to make sure it's running smoothly.
+	runtime.GC()
 	if want, got := []string{"inbox", tn, "unread"}, tags; !reflect.DeepEqual(want, got) {
 		t.Errorf("msg.Tags(): want %v got %v", want, got)
 	}
@@ -417,13 +385,10 @@ func TestMessageAtomic(t *testing.T) {
 			t.Fatalf("msg.RemoveTag(%q): got error: %s", tn, err)
 		}
 	})
-	ts = msg.Tags()
-	tags = []string{}
-	for ts.Next(tag) {
-		tags = append(tags, tag.Value)
-		// invoke the GC to make sure it's running smoothly.
-		runtime.GC()
-	}
+
+	tags = msg.Tags().slice()
+	// invoke the GC to make sure it's running smoothly.
+	runtime.GC()
 	if want, got := []string{"inbox", "unread"}, tags; !reflect.DeepEqual(want, got) {
 		t.Errorf("msg.Tags(): want %v got %v", want, got)
 	}

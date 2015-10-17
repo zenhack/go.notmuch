@@ -22,12 +22,7 @@ func TestMessagesTags(t *testing.T) {
 		t.Fatalf("threads.Next(thread): unable to fetch the first and only thread")
 	}
 	msgs := thread.Messages()
-	ts := msgs.Tags()
-	tag := &Tag{}
-	var tags []string
-	for ts.Next(tag) {
-		tags = append(tags, tag.Value)
-	}
+	tags := msgs.Tags().slice()
 	if want, got := []string{"inbox", "signed", "unread"}, tags; !reflect.DeepEqual(want, got) {
 		t.Errorf("thread.Tags(): want %v got %v", want, got)
 	}
