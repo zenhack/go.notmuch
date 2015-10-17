@@ -64,15 +64,17 @@ func (c *cStruct) doClose(f func() error) error {
 	if c.parent != nil {
 		c.parent.rLock()
 	}
+	defer func() {
+		if c.parent != nil {
+			c.parent.rUnlock()
+		}
+		c.cptr = nil
+		c.parent = nil
+		c.lock.Unlock()
+	}()
 	if c.live() {
 		err = f()
 	}
-	if c.parent != nil {
-		c.parent.rUnlock()
-	}
-	c.cptr = nil
-	c.parent = nil
-	c.lock.Unlock()
 	return err
 }
 
