@@ -33,4 +33,4 @@ before_install:
   - sudo rm -rf notmuch
 # In addition to running the test suite, we should also make sure the example
 # builds.
-script: make test && cd example && go build
+script: make ci
