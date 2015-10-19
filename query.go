@@ -15,7 +15,7 @@ import "unsafe"
 type Query cStruct
 
 func (q *Query) Close() error {
-	return (*cStruct)(q).doClose(func () error {
+	return (*cStruct)(q).doClose(func() error {
 		C.notmuch_query_destroy(q.toC())
 		return nil
 	})
@@ -38,7 +38,7 @@ func (q *Query) Threads() (*Threads, error) {
 		return nil, err
 	}
 	threads := &Threads{
-		cptr: unsafe.Pointer(cthreads),
+		cptr:   unsafe.Pointer(cthreads),
 		parent: (*cStruct)(q),
 	}
 	setGcClose(threads)

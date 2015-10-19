@@ -50,7 +50,7 @@ func (ms *Messages) Tags() *Tags {
 	// it as OOM for now but we eventually have to narrow it down.
 	checkOOM(unsafe.Pointer(ctags))
 	tags := &Tags{
-		cptr: unsafe.Pointer(ctags),
+		cptr:   unsafe.Pointer(ctags),
 		parent: (*cStruct)(ms),
 	}
 	setGcClose(tags)
@@ -61,7 +61,7 @@ func (ms *Messages) get() *Message {
 	cmessage := C.notmuch_messages_get(ms.toC())
 	checkOOM(unsafe.Pointer(cmessage))
 	message := &Message{
-		cptr: unsafe.Pointer(cmessage),
+		cptr:   unsafe.Pointer(cmessage),
 		parent: (*cStruct)(ms),
 	}
 	setGcClose(message)

@@ -56,7 +56,7 @@ func (t *Thread) CountMatched() int {
 // current thread in oldest-first order.
 func (t *Thread) TopLevelMessages() *Messages {
 	ret := &Messages{
-		cptr: unsafe.Pointer(C.notmuch_thread_get_toplevel_messages(t.toC())),
+		cptr:   unsafe.Pointer(C.notmuch_thread_get_toplevel_messages(t.toC())),
 		parent: (*cStruct)(t),
 	}
 	setGcClose(ret)
@@ -67,7 +67,7 @@ func (t *Thread) TopLevelMessages() *Messages {
 // oldest-first order.
 func (t *Thread) Messages() *Messages {
 	msgs := &Messages{
-		cptr: unsafe.Pointer(C.notmuch_thread_get_messages(t.toC())),
+		cptr:   unsafe.Pointer(C.notmuch_thread_get_messages(t.toC())),
 		parent: (*cStruct)(t),
 	}
 	setGcClose(msgs)
@@ -118,7 +118,7 @@ func (t *Thread) NewestDate() time.Time {
 func (t *Thread) Tags() *Tags {
 	ctags := C.notmuch_thread_get_tags(t.toC())
 	tags := &Tags{
-		cptr: unsafe.Pointer(ctags),
+		cptr:   unsafe.Pointer(ctags),
 		parent: (*cStruct)(t),
 	}
 	setGcClose(tags)

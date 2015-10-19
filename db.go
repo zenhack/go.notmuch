@@ -104,7 +104,7 @@ func (db *DB) NewQuery(queryString string) *Query {
 	defer C.free(unsafe.Pointer(cstr))
 	cquery := C.notmuch_query_create(db.toC(), cstr)
 	query := &Query{
-		cptr: unsafe.Pointer(cquery),
+		cptr:   unsafe.Pointer(cquery),
 		parent: (*cStruct)(db),
 	}
 	setGcClose(query)
@@ -153,7 +153,7 @@ func (db *DB) AddMessage(filename string) (*Message, error) {
 		return nil, err
 	}
 	msg := &Message{
-		cptr: unsafe.Pointer(cmsg),
+		cptr:   unsafe.Pointer(cmsg),
 		parent: (*cStruct)(db),
 	}
 	setGcClose(msg)
@@ -181,7 +181,7 @@ func (db *DB) FindMessage(id string) (*Message, error) {
 		return nil, ErrNotFound
 	}
 	msg := &Message{
-		cptr: unsafe.Pointer(cmsg),
+		cptr:   unsafe.Pointer(cmsg),
 		parent: (*cStruct)(db),
 	}
 	setGcClose(msg)
@@ -201,7 +201,7 @@ func (db *DB) FindMessageByFilename(filename string) (*Message, error) {
 		return nil, ErrNotFound
 	}
 	msg := &Message{
-		cptr: unsafe.Pointer(cmsg),
+		cptr:   unsafe.Pointer(cmsg),
 		parent: (*cStruct)(db),
 	}
 	setGcClose(msg)
@@ -215,7 +215,7 @@ func (db *DB) Tags() (*Tags, error) {
 		return nil, ErrUnknownError
 	}
 	tags := &Tags{
-		cptr: unsafe.Pointer(ctags),
+		cptr:   unsafe.Pointer(ctags),
 		parent: (*cStruct)(db),
 	}
 	setGcClose(tags)

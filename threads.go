@@ -40,7 +40,7 @@ func (ts *Threads) get() *Thread {
 	cthread := C.notmuch_threads_get(ts.toC())
 	checkOOM(unsafe.Pointer(cthread))
 	thread := &Thread{
-		cptr: unsafe.Pointer(cthread),
+		cptr:   unsafe.Pointer(cthread),
 		parent: (*cStruct)(ts),
 	}
 	setGcClose(thread)

@@ -46,7 +46,7 @@ func (m *Message) Replies() (*Messages, error) {
 	// We point the messages object directly at our thread, rather than having
 	// the gc reference go through this message:
 	msgs := &Messages{
-		cptr: unsafe.Pointer(cmsgs),
+		cptr:   unsafe.Pointer(cmsgs),
 		parent: (*cStruct)(m),
 	}
 	setGcClose(msgs)
@@ -91,7 +91,7 @@ func (m *Message) Header(name string) string {
 func (m *Message) Tags() *Tags {
 	ctags := C.notmuch_message_get_tags(m.toC())
 	tags := &Tags{
-		cptr: unsafe.Pointer(ctags),
+		cptr:   unsafe.Pointer(ctags),
 		parent: (*cStruct)(m),
 	}
 	setGcClose(tags)
