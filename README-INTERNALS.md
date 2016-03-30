@@ -15,15 +15,15 @@ notmuch_database_t is wrapped by DB, notmuch_query_t is wrapped by Query
 and so on. Each of these wrappers is an alias for the type cStruct,
 which holds a pointer to the underlying C object, and also to the
 wrappers for any objects referenced by the underlying C object (via the
-"parents" field).  This keeps the GC from collecting parent objects if
+`parent` field).  This keeps the GC from collecting parent objects if
 the children are still in use.
 
 ## Creating objects
 
-When creating an object, the caller should set the parents field to a
-slice containing pointers to the object's immediate parent objects, and
-set cptr to the underlying c pointer. Finally, calling setGcClose on the
-object will cause it to be released properly by the garbage collector.
+When creating an object, the caller should set the `parent` field to a
+pointer to the object's immediate parent object, and set cptr to the
+underlying c pointer. Finally, calling setGcClose on the object will
+cause it to be released properly by the garbage collector.
 
 ## Cleaning up
 
