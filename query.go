@@ -33,7 +33,7 @@ func (q *Query) String() string {
 // Threads returns the threads matching the query.
 func (q *Query) Threads() (*Threads, error) {
 	var cthreads *C.notmuch_threads_t
-	err := statusErr(C.notmuch_query_search_threads_st(q.toC(), &cthreads))
+	err := statusErr(C.notmuch_query_search_threads(q.toC(), &cthreads))
 	if err != nil {
 		return nil, err
 	}
@@ -47,10 +47,14 @@ func (q *Query) Threads() (*Threads, error) {
 
 // CountThreads returns the number of messages for the current query.
 func (q *Query) CountThreads() int {
-	return int(C.notmuch_query_count_threads(q.toC()))
+	var ccount C.uint
+	C.notmuch_query_count_threads(q.toC(), &ccount)
+	return int(ccount)
 }
 
 // CountMessages returns the number of messages for the current query.
 func (q *Query) CountMessages() int {
-	return int(C.notmuch_query_count_messages(q.toC()))
+	var cCount C.uint
+	C.notmuch_query_count_messages(q.toC(), &cCount)
+	return int(cCount)
 }
