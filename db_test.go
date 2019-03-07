@@ -88,7 +88,7 @@ func TestNeedsUpgrade(t *testing.T) {
 	}
 	defer db.Close()
 	if want, got := false, db.NeedsUpgrade(); want != got {
-		t.Errorf("db.NeedsUpgrade(): want %b got %b", want, got)
+		t.Errorf("db.NeedsUpgrade(): want %t got %t", want, got)
 	}
 }
 
