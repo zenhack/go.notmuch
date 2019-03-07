@@ -149,8 +149,7 @@ func (db *DB) AddMessage(filename string) (*Message, error) {
 	defer C.free(unsafe.Pointer(cfilename))
 
 	var cmsg *C.notmuch_message_t
-	var copts = C.notmuch_database_get_default_indexopts(db.toC())
-	if err := statusErr(C.notmuch_database_index_file(db.toC(), cfilename, copts, &cmsg)); err != nil {
+	if err := statusErr(C.notmuch_database_index_file(db.toC(), cfilename, nil, &cmsg)); err != nil {
 		return nil, err
 	}
 	msg := &Message{
