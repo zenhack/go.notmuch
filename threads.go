@@ -27,11 +27,11 @@ func (ts *Threads) Close() error {
 
 // Next retrieves the next thread from the result set. Next returns true if a thread
 // was successfully retrieved.
-func (ts *Threads) Next(t *Thread) bool {
+func (ts *Threads) Next(t **Thread) bool {
 	if !ts.valid() {
 		return false
 	}
-	*t = *ts.get()
+	*t = ts.get()
 	C.notmuch_threads_move_to_next(ts.toC())
 	return true
 }

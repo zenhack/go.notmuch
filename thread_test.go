@@ -61,7 +61,7 @@ func TestSubjectUTF8(t *testing.T) {
 		t.Fatalf("error getting the threads: %s", err)
 	}
 	thread := &Thread{}
-	if !threads.Next(thread) {
+	if !threads.Next(&thread) {
 		t.Fatalf("threads.Next(thread): unable to fetch the first and only thread")
 	}
 	if want, got := "Essai accentué", thread.Subject(); want != got {
@@ -84,7 +84,7 @@ func TestTopLevelMessages(t *testing.T) {
 	msgs := thread.TopLevelMessages()
 	message := &Message{}
 	var count int
-	for msgs.Next(message) {
+	for msgs.Next(&message) {
 		if want, got := thread.ID(), message.ThreadID(); want != got {
 			t.Errorf("thread.TopLevelMessages()[n]: want %s got %s", want, got)
 		}
@@ -114,7 +114,7 @@ func TestMessages(t *testing.T) {
 	msgs := thread.Messages()
 	message := &Message{}
 	var count int
-	for msgs.Next(message) {
+	for msgs.Next(&message) {
 		if want, got := thread.ID(), message.ThreadID(); want != got {
 			t.Errorf("thread.Messages()[n]: want %s got %s", want, got)
 		}
@@ -169,7 +169,7 @@ func TestAuthors(t *testing.T) {
 			t.Fatalf("error getting the threads: %s", err)
 		}
 		thread := &Thread{}
-		for i := 0; threads.Next(thread); i++ {
+		for i := 0; threads.Next(&thread); i++ {
 			matched, unmatched := thread.Authors()
 			if want, got := ress[i].matched, matched; !reflect.DeepEqual(want, got) {
 				t.Errorf("thread.Authors() matched: want %v got %v", want, got)
@@ -246,7 +246,7 @@ func firstThread(db *DB, qs string) (*Thread, error) {
 		return nil, err
 	}
 	thread := &Thread{}
-	if !threads.Next(thread) {
+	if !threads.Next(&thread) {
 		return nil, errors.New("threads.Next(thread): unable to fetch the first thread")
 	}
 	return thread, nil

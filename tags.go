@@ -25,20 +25,20 @@ func (ts *Tags) Close() error {
 
 // Next retrieves the next tag from the result set. Next returns true if a tag
 // was successfully retrieved.
-func (ts *Tags) Next(t *Tag) bool {
+func (ts *Tags) Next(t **Tag) bool {
 	if !ts.valid() {
 		return false
 	}
-	*t = *ts.get()
+	*t = ts.get()
 	C.notmuch_tags_move_to_next(ts.toC())
 	return true
 }
 
 // Return a slice of strings containing each element of ts.
 func (ts *Tags) slice() []string {
-	tag := &Tag{}
+	var tag *Tag
 	ret := []string{}
-	for ts.Next(tag) {
+	for ts.Next(&tag) {
 		ret = append(ret, tag.Value)
 	}
 	return ret

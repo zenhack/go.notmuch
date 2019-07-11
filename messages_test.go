@@ -18,7 +18,7 @@ func TestMessagesTags(t *testing.T) {
 		t.Fatalf("error getting the threads: %s", err)
 	}
 	thread := &Thread{}
-	if !threads.Next(thread) {
+	if !threads.Next(&thread) {
 		t.Fatalf("threads.Next(thread): unable to fetch the first and only thread")
 	}
 	msgs := thread.Messages()

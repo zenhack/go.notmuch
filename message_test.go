@@ -21,7 +21,7 @@ func TestMessageID(t *testing.T) {
 	}
 	msgs := thread.Messages()
 	msg := &Message{}
-	if !msgs.Next(msg) {
+	if !msgs.Next(&msg) {
 		t.Fatalf("msgs.Next(msg): unable to fetch the first message in the thread")
 	}
 	if want, got := "20091118002059.067214ed@hikari", msg.ID(); want != got {
@@ -42,7 +42,7 @@ func TestMessageThreadID(t *testing.T) {
 	}
 	msgs := thread.Messages()
 	msg := &Message{}
-	if !msgs.Next(msg) {
+	if !msgs.Next(&msg) {
 		t.Fatalf("msgs.Next(msg): unable to fetch the first message in the thread")
 	}
 	if want, got := thread.ID(), msg.ThreadID(); want != got {
@@ -63,7 +63,7 @@ func TestMessageReplies(t *testing.T) {
 	}
 	msgs := thread.Messages()
 	msg := &Message{}
-	if !msgs.Next(msg) {
+	if !msgs.Next(&msg) {
 		t.Fatalf("msgs.Next(msg): unable to fetch the first message in the thread")
 	}
 
@@ -72,7 +72,7 @@ func TestMessageReplies(t *testing.T) {
 		t.Fatalf("msg.Replies(): unexpected error: %s", err)
 	}
 	var count int
-	for replies.Next(msg) {
+	for replies.Next(&msg) {
 		count++
 
 		// invoke the GC to make sure it's running smoothly.
@@ -103,7 +103,7 @@ func TestMessageFilename(t *testing.T) {
 	}
 	msgs := thread.Messages()
 	msg := &Message{}
-	if !msgs.Next(msg) {
+	if !msgs.Next(&msg) {
 		t.Fatalf("msgs.Next(msg): unable to fetch the first message in the thread")
 	}
 
@@ -130,7 +130,7 @@ func TestMessageFilenames(t *testing.T) {
 	}
 	msgs := thread.Messages()
 	msg := &Message{}
-	if !msgs.Next(msg) {
+	if !msgs.Next(&msg) {
 		t.Fatalf("msgs.Next(msg): unable to fetch the first message in the thread")
 	}
 
@@ -164,7 +164,7 @@ func TestMessageDate(t *testing.T) {
 	}
 	msgs := thread.Messages()
 	msg := &Message{}
-	if !msgs.Next(msg) {
+	if !msgs.Next(&msg) {
 		t.Fatalf("msgs.Next(msg): unable to fetch the first message in the thread")
 	}
 	if want, got := time.Unix(1258500098, 0), msg.Date(); want.Unix() != got.Unix() {
@@ -185,7 +185,7 @@ func TestMessageHeader(t *testing.T) {
 	}
 	msgs := thread.Messages()
 	msg := &Message{}
-	for msgs.Next(msg) {
+	for msgs.Next(&msg) {
 		if msg.ID() == "1258471718-6781-2-git-send-email-dottedmag@dottedmag.net" {
 			break
 		}
@@ -213,7 +213,7 @@ func TestMessageTags(t *testing.T) {
 	}
 	msgs := thread.Messages()
 	msg := &Message{}
-	for msgs.Next(msg) {
+	for msgs.Next(&msg) {
 		if msg.ID() == "1258471718-6781-2-git-send-email-dottedmag@dottedmag.net" {
 			break
 		}
@@ -242,7 +242,7 @@ func TestMessageAddRemoveTagReadonlyDB(t *testing.T) {
 	}
 	msgs := thread.Messages()
 	msg := &Message{}
-	for msgs.Next(msg) {
+	for msgs.Next(&msg) {
 		if msg.ID() == "1258471718-6781-2-git-send-email-dottedmag@dottedmag.net" {
 			break
 		}
@@ -284,7 +284,7 @@ func TestMessageAddRemoveTag(t *testing.T) {
 	}
 	msgs := thread.Messages()
 	msg := &Message{}
-	for msgs.Next(msg) {
+	for msgs.Next(&msg) {
 		if msg.ID() == "1258471718-6781-2-git-send-email-dottedmag@dottedmag.net" {
 			break
 		}
@@ -351,7 +351,7 @@ func TestMessageAtomic(t *testing.T) {
 	}
 	msgs := thread.Messages()
 	msg := &Message{}
-	for msgs.Next(msg) {
+	for msgs.Next(&msg) {
 		if msg.ID() == "1258471718-6781-2-git-send-email-dottedmag@dottedmag.net" {
 			break
 		}

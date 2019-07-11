@@ -23,7 +23,7 @@ func TestSearchThreads(t *testing.T) {
 
 	var count int
 	thread := &Thread{}
-	for threads.Next(thread) {
+	for threads.Next(&thread) {
 		count++
 		// invoke the GC to make sure it's running smoothly.
 		if count%2 == 0 {
@@ -50,7 +50,7 @@ func TestGetNoResult(t *testing.T) {
 
 	var count int
 	thread := &Thread{}
-	for threads.Next(thread) {
+	for threads.Next(&thread) {
 		count++
 		// invoke the GC to make sure it's running smoothly.
 		if count%2 == 0 {

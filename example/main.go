@@ -33,8 +33,8 @@ func main() {
 	if err != nil {
 		fmt.Println(err)
 	}
-	thread := &notmuch.Thread{}
-	for threads.Next(thread) {
+	var thread *notmuch.Thread
+	for threads.Next(&thread) {
 		m, um := thread.Authors()
 		fmt.Printf("id:%s subject:%q authors:%v\n", thread.ID(), thread.Subject(), append(m, um...))
 	}

@@ -28,11 +28,11 @@ func (ms *Messages) toC() *C.notmuch_messages_t {
 
 // Next retrieves the next message from the result set. Next returns true if a message
 // was successfully retrieved.
-func (ms *Messages) Next(m *Message) bool {
+func (ms *Messages) Next(m **Message) bool {
 	if !ms.valid() {
 		return false
 	}
-	*m = *ms.get()
+	*m = ms.get()
 	C.notmuch_messages_move_to_next(ms.toC())
 	return true
 }
