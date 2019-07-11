@@ -113,11 +113,11 @@ func TestUpgrade(t *testing.T) {
 }
 
 func TestAddMessage(t *testing.T) {
-	fp, err := filepath.Abs("fixtures/emails/notmuch0202:2,")
+	fp, err := filepath.Abs("fixtures/emails/notmuch0202.2,")
 	if err != nil {
 		t.Fatalf("error getting the absolute path: %s", err)
 	}
-	nfp, err := filepath.Abs("fixtures/database-v1/new/notmuch0202:2,")
+	nfp, err := filepath.Abs("fixtures/database-v1/new/notmuch0202.2,")
 	if err != nil {
 		t.Fatalf("error getting the absolute path: %s", err)
 	}
