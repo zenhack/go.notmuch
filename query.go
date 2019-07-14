@@ -89,7 +89,7 @@ func (q *Query) CountMessages() int {
 }
 
 // SetExcludeScheme is used to set the exclude scheme on a query.
-func (q *Query) SetExcludeScheme(mode ExcludeMode){
+func (q *Query) SetExcludeScheme(mode ExcludeMode) {
 	cmode := C.notmuch_exclude_t(mode)
 	C.notmuch_query_set_omit_excluded(q.toC(), cmode)
 }
