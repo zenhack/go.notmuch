@@ -11,8 +11,37 @@ import "C"
 
 import "unsafe"
 
+const (
+	// notmuch_query_search_messages and notmuch_query_search_threads
+	// will return all matching messages/threads regardless of exclude status.
+	// The exclude flag will be set for any excluded message that is
+	// returned by notmuch_query_search_messages, and the thread counts
+	// for threads returned by notmuch_query_search_threads will be the
+	// number of non-excluded messages/matches.
+	QUERY_EXCLUDE_FLAG = C.NOTMUCH_EXCLUDE_FLAG
+	// notmuch_query_search_messages and notmuch_query_search_threads
+	// will return all matching messages/threads regardless of exclude status.
+	// The exclude status is completely ignored.
+	QUERY_EXCLUDE_FALSE = C.NOTMUCH_EXCLUDE_FALSE
+	// notmuch_query_search_messages will omit excluded
+	// messages from the results, and notmuch_query_search_threads will omit
+	// threads that match only in excluded messages.
+	// notmuch_query_search_threads will include all messages in threads that
+	// match in at least one non-excluded message.
+	QUERY_EXCLUDE_TRUE = C.NOTMUCH_EXCLUDE_TRUE
+	// notmuch_query_search_messages will omit excluded
+	// messages from the results, and notmuch_query_search_threads will omit
+	// threads that match only in excluded messages.
+	// notmuch_query_search_threads will omit excluded messages from all threads.
+	QUERY_EXCLUDE_ALL = C.NOTMUCH_EXCLUDE_ALL
+)
+
 // Query represents a notmuch query.
 type Query cStruct
+
+// ExcludeMode represents the exclude behaviour of a query.
+// One of QUERY_EXCLUDE_{ALL,FLAG,TRUE,FALSE}.
+type ExcludeMode C.notmuch_exclude_t
 
 func (q *Query) Close() error {
 	return (*cStruct)(q).doClose(func() error {
@@ -57,4 +86,10 @@ func (q *Query) CountMessages() int {
 	var cCount C.uint
 	C.notmuch_query_count_messages(q.toC(), &cCount)
 	return int(cCount)
+}
+
+// SetExcludeScheme is used to set the exclude scheme on a query.
+func (q *Query) SetExcludeScheme(mode ExcludeMode){
+	cmode := C.notmuch_exclude_t(mode)
+	C.notmuch_query_set_omit_excluded(q.toC(), cmode)
 }
