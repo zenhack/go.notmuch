@@ -89,6 +89,24 @@ func TestQueryCountThreads(t *testing.T) {
 	}
 }
 
+func TestSetSortScheme(t *testing.T) {
+	db, err := Open(dbPath, DBReadOnly)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	q := db.NewQuery("subject:\"Introducing myself\"")
+	for _, scheme := range []SortMode{
+		SORT_OLDEST_FIRST,
+		SORT_NEWEST_FIRST,
+		SORT_MESSAGE_ID,
+		SORT_UNSORTED,
+	} {
+		q.SetSortScheme(scheme)
+	}
+}
+
 func TestString(t *testing.T) {
 	db, err := Open(dbPath, DBReadOnly)
 	if err != nil {
