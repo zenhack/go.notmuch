@@ -14,6 +14,17 @@ import "unsafe"
 // Query represents a notmuch query.
 type Query cStruct
 
+const (
+	SORT_OLDEST_FIRST = C.NOTMUCH_SORT_OLDEST_FIRST
+	SORT_NEWEST_FIRST = C.NOTMUCH_SORT_NEWEST_FIRST
+	SORT_MESSAGE_ID   = C.NOTMUCH_SORT_MESSAGE_ID
+	SORT_UNSORTED     = C.NOTMUCH_SORT_UNSORTED
+)
+
+// SortMode represents the sort behaviour of a query.
+// One of SORT_{OLDEST_FIRST,NEWEST_FIRST,MESSAGE_ID,UNSORTED}
+type SortMode C.notmuch_sort_t
+
 func (q *Query) Close() error {
 	return (*cStruct)(q).doClose(func() error {
 		C.notmuch_query_destroy(q.toC())
@@ -57,4 +68,10 @@ func (q *Query) CountMessages() int {
 	var cCount C.uint
 	C.notmuch_query_count_messages(q.toC(), &cCount)
 	return int(cCount)
+}
+
+// SetSortScheme is used to set the sort scheme on a query.
+func (q *Query) SetSortScheme(mode SortMode) {
+	cmode := C.notmuch_sort_t(mode)
+	C.notmuch_query_set_sort(q.toC(), cmode)
 }
