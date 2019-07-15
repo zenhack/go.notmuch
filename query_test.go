@@ -101,3 +101,21 @@ func TestString(t *testing.T) {
 		t.Errorf("q.String(): want %s got %s", want, got)
 	}
 }
+
+func TestSetExcludeScheme(t *testing.T) {
+	db, err := Open(dbPath, DBReadOnly)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	q := db.NewQuery("subject:\"Introducing myself\"")
+	for _, mode := range []ExcludeMode{
+		QUERY_EXCLUDE_FLAG,
+		QUERY_EXCLUDE_ALL,
+		QUERY_EXCLUDE_TRUE,
+		QUERY_EXCLUDE_FALSE,
+	} {
+		q.SetExcludeScheme(mode)
+	}
+}
