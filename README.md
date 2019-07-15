@@ -7,14 +7,14 @@ Licensed under the GPLv3 or later (like notmuch itself).
 
 [1]: http://notmuchmail.org/
 
-## Develop
+# Development
 
-### Running tests
+## Running tests
 The project uses `make` to setup and download additional assets for the tests.
 
 Run `make test` to run the tests.
 
-### Pre PR checks
+## Pre PR checks
 Next to the tests, you should also run gofmt on the sourcecode.
 Running `make fmtcheck` checks for formatting issues.
 
