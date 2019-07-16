@@ -1,5 +1,7 @@
 before_script:
-  - apt-get update && apt-get install -y build-essential notmuch notmuch-dev curl
+  - echo 'deb http://deb.debian.org/debian stretch-backports main' > /etc/apt/sources.list.d/stretch-backports.list
+  - apt-get update
+  - apt-get -t stretch-backports install -y libnotmuch-dev
 test:go111:
   image: "golang:1.12.7-stretch"
   script:
