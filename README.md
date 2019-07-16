@@ -1,4 +1,4 @@
-[![Build Status][ci-image]][ci]
+[![Build Status][ci-img]][ci]
 
 Go binding for [notmuch mail][notmuch].
 
