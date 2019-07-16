@@ -1,10 +1,10 @@
 before_script:
-  - apk add build-base notmuch notmuch-dev curl
+  - apt-get update && apt-get install -y build-essential notmuch notmuch-dev curl
 test:go111:
-  image: "golang:1.12.7-alpine3.10"
+  image: "golang:1.12.7-stretch"
   script:
     - make ci
 test:go112:
-  image: "golang:1.11.12-alpine3.10"
+  image: "golang:1.11.12-stretch"
   script:
     - make ci
