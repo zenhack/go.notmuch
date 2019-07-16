@@ -1,5 +1,10 @@
-image: "golang:1.12.7-alpine-3.10"
-before-script:
+before_script:
   - apk add build-base notmuch
-script:
-  - make ci
+test:go111:
+  image: "golang:1.12.7-alpine3.10"
+  script:
+    - make ci
+test:go112:
+  image: "golang:1.11.12-alpine3.10"
+  script:
+    - make ci
