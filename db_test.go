@@ -76,7 +76,7 @@ func TestPath(t *testing.T) {
 		t.Fatalf("Open(%q): unexpected error: %s", dbPath, err)
 	}
 	defer db.Close()
-	if want, got := "go.notmuch/fixtures/database-v1", db.Path(); !strings.HasSuffix(got, want) {
+	if want, got := "fixtures/database-v1", db.Path(); !strings.HasSuffix(got, want) {
 		t.Errorf("db.Path(): want %s got %s", want, got)
 	}
 }
