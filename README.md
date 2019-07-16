@@ -1,5 +1,4 @@
-[![Build
-Status](https://travis-ci.org/zenhack/go.notmuch.svg?branch=master)](https://travis-ci.org/zenhack/go.notmuch)
+[![Build Status][ci-image]][ci]
 
 Go binding for [notmuch mail][1].
 
@@ -19,3 +18,5 @@ Running `make fmtcheck` checks for formatting issues.
 To run both tests and format checks, use `make ci`.
 
 [1]: http://notmuchmail.org/
+[ci-img]: https://gitlab.com/isd/go-notmuch/badges/master/build.svg
+[ci]: https://gitlab.com/isd/go-notmuch/pipelines
