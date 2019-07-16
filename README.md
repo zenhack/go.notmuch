@@ -1,6 +1,6 @@
 [![Build Status][ci-image]][ci]
 
-Go binding for [notmuch mail][1].
+Go binding for [notmuch mail][notmuch].
 
 Licensed under the GPLv3 or later (like notmuch itself).
 
@@ -17,6 +17,6 @@ Running `make fmtcheck` checks for formatting issues.
 
 To run both tests and format checks, use `make ci`.
 
-[1]: http://notmuchmail.org/
+[notmuch]: http://notmuchmail.org/
 [ci-img]: https://gitlab.com/isd/go-notmuch/badges/master/build.svg
 [ci]: https://gitlab.com/isd/go-notmuch/pipelines
