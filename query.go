@@ -14,16 +14,43 @@ import "unsafe"
 // Query represents a notmuch query.
 type Query cStruct
 
-const (
-	SORT_OLDEST_FIRST = C.NOTMUCH_SORT_OLDEST_FIRST
-	SORT_NEWEST_FIRST = C.NOTMUCH_SORT_NEWEST_FIRST
-	SORT_MESSAGE_ID   = C.NOTMUCH_SORT_MESSAGE_ID
-	SORT_UNSORTED     = C.NOTMUCH_SORT_UNSORTED
-)
-
 // SortMode represents the sort behaviour of a query.
 // One of SORT_{OLDEST_FIRST,NEWEST_FIRST,MESSAGE_ID,UNSORTED}
 type SortMode C.notmuch_sort_t
+
+// ExcludeMode represents the exclude behaviour of a query.
+// One of EXCLUDE_{ALL,FLAG,TRUE,FALSE}.
+type ExcludeMode C.notmuch_exclude_t
+
+var (
+	SORT_OLDEST_FIRST SortMode = C.NOTMUCH_SORT_OLDEST_FIRST
+	SORT_NEWEST_FIRST SortMode = C.NOTMUCH_SORT_NEWEST_FIRST
+	SORT_MESSAGE_ID   SortMode = C.NOTMUCH_SORT_MESSAGE_ID
+	SORT_UNSORTED     SortMode = C.NOTMUCH_SORT_UNSORTED
+)
+
+var (
+	// Query.SearchMessages and Query.Threads will return all matching
+	// messages/threads regardless of exclude status.
+	// The exclude flag will be set for any excluded message that is
+	// returned by Query.SearchMessages, and the thread counts
+	// for threads returned by Query.Threads will be the
+	// number of non-excluded messages/matches.
+	EXCLUDE_FLAG ExcludeMode = C.NOTMUCH_EXCLUDE_FLAG
+	// Query.SearchMessages and Query.Threads will return all matching
+	// messages/threads regardless of exclude status.
+	// The exclude status is completely ignored.
+	EXCLUDE_FALSE ExcludeMode = C.NOTMUCH_EXCLUDE_FALSE
+	// Query.SearchMessages will omit excluded messages from the results,
+	// and Query.Threads will omit threads that match only in excluded messages.
+	// Query.Threads will include all messages in threads that
+	// match in at least one non-excluded message.
+	EXCLUDE_TRUE ExcludeMode = C.NOTMUCH_EXCLUDE_TRUE
+	// Query.SearchMessages will omit excluded messages from the results,
+	// and Query.Threads will omit threads that match only in excluded messages.
+	// Query.Threads will omit excluded messages from all threads.
+	EXCLUDE_ALL ExcludeMode = C.NOTMUCH_EXCLUDE_ALL
+)
 
 func (q *Query) Close() error {
 	return (*cStruct)(q).doClose(func() error {
@@ -74,4 +101,10 @@ func (q *Query) CountMessages() int {
 func (q *Query) SetSortScheme(mode SortMode) {
 	cmode := C.notmuch_sort_t(mode)
 	C.notmuch_query_set_sort(q.toC(), cmode)
+}
+
+// SetExcludeScheme is used to set the exclude scheme on a query.
+func (q *Query) SetExcludeScheme(mode ExcludeMode) {
+	cmode := C.notmuch_exclude_t(mode)
+	C.notmuch_query_set_omit_excluded(q.toC(), cmode)
 }
