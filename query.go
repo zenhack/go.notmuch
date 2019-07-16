@@ -30,23 +30,23 @@ var (
 )
 
 var (
-	// Query.SearchMessages and Query.Threads will return all matching
+	// Query.Messages and Query.Threads will return all matching
 	// messages/threads regardless of exclude status.
 	// The exclude flag will be set for any excluded message that is
 	// returned by Query.SearchMessages, and the thread counts
 	// for threads returned by Query.Threads will be the
 	// number of non-excluded messages/matches.
 	EXCLUDE_FLAG ExcludeMode = C.NOTMUCH_EXCLUDE_FLAG
-	// Query.SearchMessages and Query.Threads will return all matching
+	// Query.Messages and Query.Threads will return all matching
 	// messages/threads regardless of exclude status.
 	// The exclude status is completely ignored.
 	EXCLUDE_FALSE ExcludeMode = C.NOTMUCH_EXCLUDE_FALSE
-	// Query.SearchMessages will omit excluded messages from the results,
+	// Query.Messages will omit excluded messages from the results,
 	// and Query.Threads will omit threads that match only in excluded messages.
 	// Query.Threads will include all messages in threads that
 	// match in at least one non-excluded message.
 	EXCLUDE_TRUE ExcludeMode = C.NOTMUCH_EXCLUDE_TRUE
-	// Query.SearchMessages will omit excluded messages from the results,
+	// Query.Messages will omit excluded messages from the results,
 	// and Query.Threads will omit threads that match only in excluded messages.
 	// Query.Threads will omit excluded messages from all threads.
 	EXCLUDE_ALL ExcludeMode = C.NOTMUCH_EXCLUDE_ALL
@@ -81,6 +81,21 @@ func (q *Query) Threads() (*Threads, error) {
 	}
 	setGcClose(threads)
 	return threads, nil
+}
+
+// Messages returns the messages matching the query.
+func (q *Query) Messages() (*Messages, error) {
+	var cmsgs *C.notmuch_messages_t
+	err := statusErr(C.notmuch_query_search_messages(q.toC(), &cmsgs))
+	if err != nil {
+		return nil, err
+	}
+	msgs := &Messages{
+		cptr:   unsafe.Pointer(cmsgs),
+		parent: (*cStruct)(q),
+	}
+	setGcClose(msgs)
+	return msgs, nil
 }
 
 // CountThreads returns the number of messages for the current query.

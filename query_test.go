@@ -36,6 +36,33 @@ func TestSearchThreads(t *testing.T) {
 	}
 }
 
+func TestSearchMessages(t *testing.T) {
+	db, err := Open(dbPath, DBReadOnly)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	msgs, err := db.NewQuery("").Messages()
+	if err != nil {
+		t.Fatalf("error getting the threads: %s", err)
+	}
+
+	var count int
+	msg := &Message{}
+	for msgs.Next(&msg) {
+		count++
+		// invoke the GC to make sure it's running smoothly.
+		if count%2 == 0 {
+			runtime.GC()
+		}
+	}
+
+	if want, got := 52, count; want != got {
+		t.Errorf("db.NewQuery(%q).Messages(): want %d got %d", "", want, got)
+	}
+}
+
 func TestGetNoResult(t *testing.T) {
 	db, err := Open(dbPath, DBReadOnly)
 	if err != nil {
