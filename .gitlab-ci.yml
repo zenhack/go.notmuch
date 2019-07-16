@@ -1,6 +1,7 @@
 before_script:
   - echo 'deb http://deb.debian.org/debian stretch-backports main' > /etc/apt/sources.list.d/stretch-backports.list
   - apt-get update
+  - apt-get install -y xz-utils
   - apt-get -t stretch-backports install -y libnotmuch-dev
 test:go111:
   image: "golang:1.11.12-stretch"
