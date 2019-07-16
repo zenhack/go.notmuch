@@ -11,8 +11,28 @@ import "C"
 
 import "unsafe"
 
-// Query represents a notmuch query.
-type Query cStruct
+const (
+	// Query.SearchMessages and Query.Threads will return all matching
+	// messages/threads regardless of exclude status.
+	// The exclude flag will be set for any excluded message that is
+	// returned by Query.SearchMessages, and the thread counts
+	// for threads returned by Query.Threads will be the
+	// number of non-excluded messages/matches.
+	EXCLUDE_FLAG = C.NOTMUCH_EXCLUDE_FLAG
+	// Query.SearchMessages and Query.Threads will return all matching
+	// messages/threads regardless of exclude status.
+	// The exclude status is completely ignored.
+	EXCLUDE_FALSE = C.NOTMUCH_EXCLUDE_FALSE
+	// Query.SearchMessages will omit excluded messages from the results,
+	// and Query.Threads will omit threads that match only in excluded messages.
+	// Query.Threads will include all messages in threads that
+	// match in at least one non-excluded message.
+	EXCLUDE_TRUE = C.NOTMUCH_EXCLUDE_TRUE
+	// Query.SearchMessages will omit excluded messages from the results,
+	// and Query.Threads will omit threads that match only in excluded messages.
+	// Query.Threads will omit excluded messages from all threads.
+	EXCLUDE_ALL = C.NOTMUCH_EXCLUDE_ALL
+)
 
 const (
 	SORT_OLDEST_FIRST = C.NOTMUCH_SORT_OLDEST_FIRST
@@ -21,9 +41,16 @@ const (
 	SORT_UNSORTED     = C.NOTMUCH_SORT_UNSORTED
 )
 
+// Query represents a notmuch query.
+type Query cStruct
+
 // SortMode represents the sort behaviour of a query.
 // One of SORT_{OLDEST_FIRST,NEWEST_FIRST,MESSAGE_ID,UNSORTED}
 type SortMode C.notmuch_sort_t
+
+// ExcludeMode represents the exclude behaviour of a query.
+// One of EXCLUDE_{ALL,FLAG,TRUE,FALSE}.
+type ExcludeMode C.notmuch_exclude_t
 
 func (q *Query) Close() error {
 	return (*cStruct)(q).doClose(func() error {
@@ -74,4 +101,10 @@ func (q *Query) CountMessages() int {
 func (q *Query) SetSortScheme(mode SortMode) {
 	cmode := C.notmuch_sort_t(mode)
 	C.notmuch_query_set_sort(q.toC(), cmode)
+}
+
+// SetExcludeScheme is used to set the exclude scheme on a query.
+func (q *Query) SetExcludeScheme(mode ExcludeMode) {
+	cmode := C.notmuch_exclude_t(mode)
+	C.notmuch_query_set_omit_excluded(q.toC(), cmode)
 }
