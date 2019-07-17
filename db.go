@@ -221,3 +221,49 @@ func (db *DB) Tags() (*Tags, error) {
 	setGcClose(tags)
 	return tags, nil
 }
+
+// GetConfigList returns the config list, which can be used to iterate over all
+// set options starting with prefix.
+func (db *DB) GetConfigList(prefix string) (*ConfigList, error) {
+	cstr := C.CString(prefix)
+	defer C.free(unsafe.Pointer(cstr))
+
+	var ccl *C.notmuch_config_list_t
+	cclptr := (**C.notmuch_config_list_t)(&ccl)
+	err := statusErr(C.notmuch_database_get_config_list(db.toC(), cstr, cclptr))
+	if err != nil {
+		return nil, err
+	}
+	cl := &ConfigList{
+		cptr:   unsafe.Pointer(ccl),
+		parent: (*cStruct)(db),
+	}
+	setGcClose(cl)
+	return cl, nil
+}
+
+// GetConfigOption gets config value of key
+func (db *DB) GetConfigOption(key string) (string, error) {
+	ckey := C.CString(key)
+	defer C.free(unsafe.Pointer(ckey))
+	var cval *C.char
+	err := statusErr(C.notmuch_database_get_config(db.toC(), ckey, &cval))
+	if err != nil {
+		return "", err
+	}
+	return C.GoString(cval), nil
+}
+
+// SetConfigOption sets config key to value.
+func (db *DB) SetConfigOption(key, value string) error {
+	ckey := C.CString(key)
+	defer C.free(unsafe.Pointer(ckey))
+	cval := C.CString(value)
+	defer C.free(unsafe.Pointer(cval))
+
+	err := statusErr(C.notmuch_database_set_config(db.toC(), ckey, cval))
+	if err != nil {
+		return err
+	}
+	return nil
+}

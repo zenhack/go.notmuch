@@ -222,3 +222,92 @@ func TestTags(t *testing.T) {
 	}
 	// TODO(kalbasit): extend the test when tags are fully implemented.
 }
+
+func TestGetConfigList(t *testing.T) {
+	db, err := Open(dbPath, DBReadOnly)
+	if err != nil {
+		t.Fatalf("Open(%q): unexpected error: %s", dbPath, err)
+	}
+	defer db.Close()
+	if _, err := db.GetConfigList(""); err != nil {
+		t.Errorf("db.GetConfigList(\"\"): unexpected error %s", err)
+	}
+}
+
+func TestSetConfig(t *testing.T) {
+	db, err := Open(dbPath, DBReadWrite)
+	if err != nil {
+		t.Fatalf("Open(%q): unexpected error: %s", dbPath, err)
+	}
+	defer db.Close()
+	cfgKey := "search.exclude_tags"
+	cfgVal := "spam"
+	if err := db.SetConfigOption(cfgKey, cfgVal); err != nil {
+		t.Errorf("db.SetConfigOption(%q, %q): unexpected error %s", cfgKey, cfgVal, err)
+	}
+}
+
+func TestGetConfigOption(t *testing.T) {
+	db, err := Open(dbPath, DBReadWrite)
+	if err != nil {
+		t.Fatalf("Open(%q): unexpected error: %s", dbPath, err)
+	}
+	defer db.Close()
+	if _, err := db.GetConfigOption("blah"); err != nil {
+		t.Errorf("db.GetConfigOption(\"blah\"): unexpected error %s", err)
+	}
+}
+
+func TestConfigRoundtrip(t *testing.T) {
+	db, err := Open(dbPath, DBReadWrite)
+	if err != nil {
+		t.Fatalf("Open(%q): unexpected error: %s", dbPath, err)
+	}
+	defer db.Close()
+	cfgKey := "search.exclude_tags"
+	cfgVal := "spam"
+	if err := db.SetConfigOption(cfgKey, cfgVal); err != nil {
+		t.Errorf("db.SetConfigOption(%q, %q): unexpected error %s", cfgKey, cfgVal, err)
+	}
+	value, err := db.GetConfigOption(cfgKey)
+	if err != nil {
+		t.Errorf("db.GetConfigOption(%q): unexpected error %s", cfgKey, err)
+	}
+	if value != cfgVal {
+		t.Errorf("db.GetConfigOption(%q): want: %q, got %q", cfgKey, cfgVal, value)
+	}
+}
+
+func TestConfigListNext(t *testing.T) {
+	db, err := Open(dbPath, DBReadWrite)
+	if err != nil {
+		t.Fatalf("Open(%q): unexpected error: %s", dbPath, err)
+	}
+	defer db.Close()
+	cfgKey := "search.exclude_tags"
+	cfgVal := "spam"
+	if err := db.SetConfigOption(cfgKey, cfgVal); err != nil {
+		t.Errorf("db.SetConfigOption(%q, %q): unexpected error %s", cfgKey, cfgVal, err)
+	}
+	cfgList, err := db.GetConfigList("")
+	if err != nil {
+		t.Fatalf("db.GetConfigList(%q): unexpected error: %s", "", err)
+	}
+	var opt *ConfigOption
+	var resKey string
+	var resVal string
+	for cfgList.Next(&opt) {
+		resKey = opt.Key
+		resVal = opt.Value
+		break
+	}
+	if resKey != cfgKey {
+		t.Errorf("config key: expected %q, got %q", cfgKey, resKey)
+	}
+	if resVal != cfgVal {
+		t.Errorf("config value: expected %q, got %q", cfgVal, resVal)
+	}
+	if cfgList.Next(&opt) {
+		t.Errorf("iteration did not stop after the end of the options")
+	}
+}
