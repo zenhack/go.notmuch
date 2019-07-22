@@ -123,3 +123,15 @@ func (q *Query) SetExcludeScheme(mode ExcludeMode) {
 	cmode := C.notmuch_exclude_t(mode)
 	C.notmuch_query_set_omit_excluded(q.toC(), cmode)
 }
+
+// AddTagExclude adds a tag that will be excluded from the query results by default.
+// This exclusion will be ignored if this tag appears explicitly in the query.
+func (q *Query) AddTagExclude(tag string) error {
+	ctag := C.CString(tag)
+	defer C.free(unsafe.Pointer(ctag))
+	status := C.notmuch_query_add_tag_exclude(q.toC(), ctag)
+	if status != C.NOTMUCH_STATUS_IGNORED {
+		return statusErr(status)
+	}
+	return nil
+}

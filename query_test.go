@@ -164,3 +164,17 @@ func TestSetExcludeScheme(t *testing.T) {
 		q.SetExcludeScheme(mode)
 	}
 }
+
+func TestAddTagExclude(t *testing.T) {
+	db, err := Open(dbPath, DBReadOnly)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	q := db.NewQuery("subject:\"Introducing myself\"")
+	err = q.AddTagExclude("spam")
+	if err != nil {
+		t.Errorf("q.AddTagExclude(\"spam\"): unexpected error: %v", err)
+	}
+}
