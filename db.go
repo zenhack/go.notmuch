@@ -247,6 +247,7 @@ func (db *DB) GetConfigOption(key string) (string, error) {
 	ckey := C.CString(key)
 	defer C.free(unsafe.Pointer(ckey))
 	var cval *C.char
+	defer C.free(unsafe.Pointer(cval))
 	err := statusErr(C.notmuch_database_get_config(db.toC(), ckey, &cval))
 	if err != nil {
 		return "", err
