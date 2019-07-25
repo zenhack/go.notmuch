@@ -262,9 +262,5 @@ func (db *DB) SetConfig(key, value string) error {
 	cval := C.CString(value)
 	defer C.free(unsafe.Pointer(cval))
 
-	err := statusErr(C.notmuch_database_set_config(db.toC(), ckey, cval))
-	if err != nil {
-		return err
-	}
-	return nil
+	return statusErr(C.notmuch_database_set_config(db.toC(), ckey, cval))
 }
