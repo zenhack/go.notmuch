@@ -242,19 +242,19 @@ func TestSetConfig(t *testing.T) {
 	defer db.Close()
 	cfgKey := "search.exclude_tags"
 	cfgVal := "spam"
-	if err := db.SetConfigOption(cfgKey, cfgVal); err != nil {
-		t.Errorf("db.SetConfigOption(%q, %q): unexpected error %s", cfgKey, cfgVal, err)
+	if err := db.SetConfig(cfgKey, cfgVal); err != nil {
+		t.Errorf("db.SetConfig(%q, %q): unexpected error %s", cfgKey, cfgVal, err)
 	}
 }
 
-func TestGetConfigOption(t *testing.T) {
+func TestGetConfig(t *testing.T) {
 	db, err := Open(dbPath, DBReadWrite)
 	if err != nil {
 		t.Fatalf("Open(%q): unexpected error: %s", dbPath, err)
 	}
 	defer db.Close()
-	if _, err := db.GetConfigOption("blah"); err != nil {
-		t.Errorf("db.GetConfigOption(\"blah\"): unexpected error %s", err)
+	if _, err := db.GetConfig("blah"); err != nil {
+		t.Errorf("db.GetConfig(\"blah\"): unexpected error %s", err)
 	}
 }
 
@@ -266,15 +266,15 @@ func TestConfigRoundtrip(t *testing.T) {
 	defer db.Close()
 	cfgKey := "search.exclude_tags"
 	cfgVal := "spam"
-	if err := db.SetConfigOption(cfgKey, cfgVal); err != nil {
-		t.Errorf("db.SetConfigOption(%q, %q): unexpected error %s", cfgKey, cfgVal, err)
+	if err := db.SetConfig(cfgKey, cfgVal); err != nil {
+		t.Errorf("db.SetConfig(%q, %q): unexpected error %s", cfgKey, cfgVal, err)
 	}
-	value, err := db.GetConfigOption(cfgKey)
+	value, err := db.GetConfig(cfgKey)
 	if err != nil {
-		t.Errorf("db.GetConfigOption(%q): unexpected error %s", cfgKey, err)
+		t.Errorf("db.GetConfig(%q): unexpected error %s", cfgKey, err)
 	}
 	if value != cfgVal {
-		t.Errorf("db.GetConfigOption(%q): want: %q, got %q", cfgKey, cfgVal, value)
+		t.Errorf("db.GetConfig(%q): want: %q, got %q", cfgKey, cfgVal, value)
 	}
 }
 
@@ -286,8 +286,8 @@ func TestConfigListNext(t *testing.T) {
 	defer db.Close()
 	cfgKey := "search.exclude_tags"
 	cfgVal := "spam"
-	if err := db.SetConfigOption(cfgKey, cfgVal); err != nil {
-		t.Errorf("db.SetConfigOption(%q, %q): unexpected error %s", cfgKey, cfgVal, err)
+	if err := db.SetConfig(cfgKey, cfgVal); err != nil {
+		t.Errorf("db.SetConfig(%q, %q): unexpected error %s", cfgKey, cfgVal, err)
 	}
 	cfgList, err := db.GetConfigList("")
 	if err != nil {

@@ -242,8 +242,8 @@ func (db *DB) GetConfigList(prefix string) (*ConfigList, error) {
 	return cl, nil
 }
 
-// GetConfigOption gets config value of key
-func (db *DB) GetConfigOption(key string) (string, error) {
+// GetConfig gets config value of key
+func (db *DB) GetConfig(key string) (string, error) {
 	ckey := C.CString(key)
 	defer C.free(unsafe.Pointer(ckey))
 	var cval *C.char
@@ -255,8 +255,8 @@ func (db *DB) GetConfigOption(key string) (string, error) {
 	return C.GoString(cval), nil
 }
 
-// SetConfigOption sets config key to value.
-func (db *DB) SetConfigOption(key, value string) error {
+// SetConfig sets config key to value.
+func (db *DB) SetConfig(key, value string) error {
 	ckey := C.CString(key)
 	defer C.free(unsafe.Pointer(ckey))
 	cval := C.CString(value)
