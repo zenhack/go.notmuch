@@ -129,9 +129,5 @@ func (q *Query) SetExcludeScheme(mode ExcludeMode) {
 func (q *Query) AddTagExclude(tag string) error {
 	ctag := C.CString(tag)
 	defer C.free(unsafe.Pointer(ctag))
-	status := C.notmuch_query_add_tag_exclude(q.toC(), ctag)
-	if status != C.NOTMUCH_STATUS_IGNORED {
-		return statusErr(status)
-	}
-	return nil
+	return statusErr(C.notmuch_query_add_tag_exclude(q.toC(), ctag))
 }
