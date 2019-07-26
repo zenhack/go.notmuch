@@ -247,11 +247,11 @@ func (db *DB) GetConfig(key string) (string, error) {
 	ckey := C.CString(key)
 	defer C.free(unsafe.Pointer(ckey))
 	var cval *C.char
-	defer C.free(unsafe.Pointer(cval))
 	err := statusErr(C.notmuch_database_get_config(db.toC(), ckey, &cval))
 	if err != nil {
 		return "", err
 	}
+	defer C.free(unsafe.Pointer(cval))
 	return C.GoString(cval), nil
 }
 
