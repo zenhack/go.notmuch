@@ -125,7 +125,7 @@ func (q *Query) SetExcludeScheme(mode ExcludeMode) {
 }
 
 // AddTagExclude adds a tag that will be excluded from the query results by default.
-// This exclusion will be ignored if this tag appears explicitly in the query.
+// Note that this function returns ErrIgnored if the provided tag appears in the query
 func (q *Query) AddTagExclude(tag string) error {
 	ctag := C.CString(tag)
 	defer C.free(unsafe.Pointer(ctag))

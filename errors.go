@@ -57,6 +57,9 @@ var (
 	// ErrUpgradeRequired is returned when the database requires an upgrade.
 	ErrUpgradeRequired = statusErr(C.NOTMUCH_STATUS_UPGRADE_REQUIRED)
 
+	// ErrIgnored is returned if the operation was ignored
+	ErrIgnored = statusErr(C.NOTMUCH_STATUS_IGNORED)
+
 	// ErrPathError is returned when there is a problem with the proposed path,
 	// e.g. a relative path passed to a function expecting an absolute path.
 	// TODO(kalbasit): this is currently on master. uncomment when released.
