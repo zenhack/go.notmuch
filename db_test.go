@@ -293,12 +293,9 @@ func TestConfigListNext(t *testing.T) {
 	if err != nil {
 		t.Fatalf("db.GetConfigList(%q): unexpected error: %s", "", err)
 	}
-	var opt *ConfigOption
 	var resKey string
 	var resVal string
-	for cfgList.Next(&opt) {
-		resKey = opt.Key
-		resVal = opt.Value
+	for cfgList.Next(&resKey, &resVal) {
 		break
 	}
 	if resKey != cfgKey {
@@ -307,7 +304,7 @@ func TestConfigListNext(t *testing.T) {
 	if resVal != cfgVal {
 		t.Errorf("config value: expected %q, got %q", cfgVal, resVal)
 	}
-	if cfgList.Next(&opt) {
+	if cfgList.Next(&resKey, &resVal) {
 		t.Errorf("iteration did not stop after the end of the options")
 	}
 }

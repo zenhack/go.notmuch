@@ -12,11 +12,6 @@ import "C"
 // Messages represents a notmuch config list
 type ConfigList cStruct
 
-//ConfigOption is used as a container for key / value pairs of the ConfigList
-type ConfigOption struct {
-	Key, Value string
-}
-
 func (cl *ConfigList) Close() error {
 	return (*cStruct)(cl).doClose(func() error {
 		C.notmuch_config_list_destroy(cl.toC())
@@ -28,13 +23,15 @@ func (cl *ConfigList) toC() *C.notmuch_config_list_t {
 	return (*C.notmuch_config_list_t)(cl.cptr)
 }
 
-// Next retrieves the nex ConfigOption from the ConfigList.
-// Next returns true if a ConfigOption was successfully retrieved.
-func (cl *ConfigList) Next(opt **ConfigOption) bool {
+// Next retrieves the nex config pair from the ConfigList.
+// Neither key, nor value must be nil, or this function will panic.
+// Next returns true if a pair was successfully retrieved.
+func (cl *ConfigList) Next(key, value *string) bool {
 	if !cl.valid() {
 		return false
 	}
-	*opt = cl.getOption()
+	*key = cl.key()
+	*value = cl.value()
 	C.notmuch_config_list_move_to_next(cl.toC())
 	return true
 }
@@ -42,13 +39,6 @@ func (cl *ConfigList) Next(opt **ConfigOption) bool {
 func (cl *ConfigList) valid() bool {
 	cbool := C.notmuch_config_list_valid(cl.toC())
 	return int(cbool) != 0
-}
-
-func (cl *ConfigList) getOption() *ConfigOption {
-	var opt ConfigOption
-	opt.Key = cl.key()
-	opt.Value = cl.value()
-	return &opt
 }
 
 func (cl *ConfigList) key() string {
