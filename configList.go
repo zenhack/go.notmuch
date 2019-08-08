@@ -24,7 +24,7 @@ func (cl *ConfigList) toC() *C.notmuch_config_list_t {
 }
 
 // Next retrieves the nex config pair from the ConfigList.
-// Neither key, nor value must be nil, or this function will panic.
+// Neither key, nor value may be nil, or this function will panic.
 // Next returns true if a pair was successfully retrieved.
 func (cl *ConfigList) Next(key, value *string) bool {
 	if !cl.valid() {
