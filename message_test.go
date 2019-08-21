@@ -393,3 +393,47 @@ func TestMessageAtomic(t *testing.T) {
 		t.Errorf("msg.Tags(): want %v got %v", want, got)
 	}
 }
+
+func TestMaildirFlagsToTags(t *testing.T) {
+	db, err := Open(dbPath, DBReadWrite)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	thread, err := firstThread(db, "id:1258471718-6781-2-git-send-email-dottedmag@dottedmag.net")
+	if err != nil {
+		t.Fatal(err)
+	}
+	msgs := thread.Messages()
+	msg := &Message{}
+	for msgs.Next(&msg) {
+		break
+	}
+	err = msg.MaildirFlagsToTags()
+	if err != nil {
+		t.Errorf("unexpected error: %v", err)
+	}
+}
+
+func TestTagsToMaildirFlags(t *testing.T) {
+	db, err := Open(dbPath, DBReadWrite)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	thread, err := firstThread(db, "id:1258471718-6781-2-git-send-email-dottedmag@dottedmag.net")
+	if err != nil {
+		t.Fatal(err)
+	}
+	msgs := thread.Messages()
+	msg := &Message{}
+	for msgs.Next(&msg) {
+		break
+	}
+	err = msg.TagsToMaildirFlags()
+	if err != nil {
+		t.Errorf("unexpected error: %v", err)
+	}
+}

@@ -125,3 +125,68 @@ func (m *Message) Atomic(callback func(*Message)) error {
 	callback(m)
 	return statusErr(C.notmuch_message_thaw(m.toC()))
 }
+
+// MaildirFlagsToTags adds/removes tags according to maildir flags in the message filename(s).
+// This function examines the filenames of 'message' for maildir
+// flags, and adds or removes tags on 'message' as follows when these
+// flags are present:
+//
+//      Flag    Action if present
+//      ----    -----------------
+//      'D'     Adds the "draft" tag to the message
+//      'F'     Adds the "flagged" tag to the message
+//      'P'     Adds the "passed" tag to the message
+//      'R'     Adds the "replied" tag to the message
+//      'S'     Removes the "unread" tag from the message
+//
+// For each flag that is not present, the opposite action (add/remove)
+// is performed for the corresponding tags.
+//
+// Flags are identified as trailing components of the filename after a
+// sequence of ":2,".
+//
+// If there are multiple filenames associated with this message, the
+// flag is considered present if it appears in one or more
+// filenames. (That is, the flags from the multiple filenames are
+// combined with the logical OR operator.)
+//
+// A client can ensure that notmuch database tags remain synchronized
+// with maildir flags by calling this function after each call to
+// DB.AddMessage. See also Message.TagsToMaildirFlags for synchronizing
+// tag changes back to maildir flags.
+func (m *Message) MaildirFlagsToTags() error {
+	return statusErr(C.notmuch_message_maildir_flags_to_tags(m.toC()))
+}
+
+// TagsToMaildirFlags renames message filename(s) to encode tags as maildir flags.
+// Specifically, for each filename corresponding to this message:
+//
+// If the filename is not in a maildir directory, do nothing. (A
+// maildir directory is determined as a directory named "new" or
+// "cur".) Similarly, if the filename has invalid maildir info,
+// (repeated or outof-ASCII-order flag characters after ":2,"), then
+// do nothing.
+//
+// If the filename is in a maildir directory, rename the file so that
+// its filename ends with the sequence ":2," followed by zero or more
+// of the following single-character flags (in ASCII order):
+//
+//   * flag 'D' if the message has the "draft" tag
+//   * flag 'F' if the message has the "flagged" tag
+//   * flag 'P' if the message has the "passed" tag
+//   * flag 'R' if the message has the "replied" tag
+//   * flag 'S' if the message does not have the "unread" tag
+//
+// Any existing flags unmentioned in the list above will be preserved
+// in the renaming.
+//
+// Also, if this filename is in a directory named "new", rename it to
+// be within the neighboring directory named "cur".
+//
+// A client can ensure that maildir filename flags remain synchronized
+// with notmuch database tags by calling this function after changing
+// tags. See also Message.MaildirFlagsToTags for synchronizing maildir flag
+// changes back to tags.
+func (m *Message) TagsToMaildirFlags() error {
+	return statusErr(C.notmuch_message_tags_to_maildir_flags(m.toC()))
+}
