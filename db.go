@@ -149,7 +149,9 @@ func (db *DB) AddMessage(filename string) (*Message, error) {
 	defer C.free(unsafe.Pointer(cfilename))
 
 	var cmsg *C.notmuch_message_t
-	if err := statusErr(C.notmuch_database_index_file(db.toC(), cfilename, nil, &cmsg)); err != nil {
+	err := statusErr(C.notmuch_database_index_file(db.toC(), cfilename, nil, &cmsg))
+
+	if err != nil && err != ErrDuplicateMessageID {
 		return nil, err
 	}
 	msg := &Message{
@@ -157,7 +159,7 @@ func (db *DB) AddMessage(filename string) (*Message, error) {
 		parent: (*cStruct)(db),
 	}
 	setGcClose(msg)
-	return msg, nil
+	return msg, err
 }
 
 // RemoveMessage remove a message filename from the current database. If the
