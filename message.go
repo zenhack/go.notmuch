@@ -117,6 +117,50 @@ func (m *Message) RemoveAllTags() error {
 	return statusErr(C.notmuch_message_remove_all_tags(m.toC()))
 }
 
+// Properties returns the properties for the current message, returning a
+// *MessageProperties which can be used to iterate over all properties using
+// `MessageProperties.Next(MessageProperty)`
+func (m *Message) Properties(key string, exact bool) *MessageProperties {
+	cexact := 0
+	if exact {
+		cexact = 1
+	}
+	ckey := C.CString(key)
+	defer C.free(unsafe.Pointer(ckey))
+	cprops := C.notmuch_message_get_properties(m.toC(), ckey, C.int(cexact))
+	props := &MessageProperties{
+		cptr:   unsafe.Pointer(cprops),
+		parent: (*cStruct)(m),
+	}
+	setGcClose(props)
+	return props
+}
+
+// AddProperty adds a property to the message.
+func (m *Message) AddProperty(key string, value string) error {
+	ckey := C.CString(key)
+	defer C.free(unsafe.Pointer(ckey))
+	cvalue := C.CString(value)
+	defer C.free(unsafe.Pointer(cvalue))
+	return statusErr(C.notmuch_message_add_property(m.toC(), ckey, cvalue))
+}
+
+// RemoveProperty removes a key/value pair from the message properties.
+func (m *Message) RemoveProperty(key string, value string) error {
+	ckey := C.CString(key)
+	defer C.free(unsafe.Pointer(ckey))
+	cvalue := C.CString(value)
+	defer C.free(unsafe.Pointer(cvalue))
+	return statusErr(C.notmuch_message_remove_property(m.toC(), ckey, cvalue))
+}
+
+// RemoveAllProperties removes all properties with key from the message.
+func (m *Message) RemoveAllProperties(key string) error {
+	ckey := C.CString(key)
+	defer C.free(unsafe.Pointer(ckey))
+	return statusErr(C.notmuch_message_remove_all_properties(m.toC(), ckey))
+}
+
 // Atomic allows a transactional change of tags to the message.
 func (m *Message) Atomic(callback func(*Message)) error {
 	if err := statusErr(C.notmuch_message_freeze(m.toC())); err != nil {
