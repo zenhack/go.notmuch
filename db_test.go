@@ -308,3 +308,126 @@ func TestConfigListNext(t *testing.T) {
 		t.Errorf("iteration did not stop after the end of the options")
 	}
 }
+
+func TestOpenWithConfig(t *testing.T) {
+	// Temp dir for our configs and profiles
+	tmpDir, err := os.MkdirTemp("", "notmuch")
+	if err != nil {
+		t.Fatalf("MkdirTemp(): unexpected error: %s", err)
+	}
+	defer os.RemoveAll(tmpDir)
+
+	// "Default" profile
+	defaultProfileDir := path.Join(tmpDir, "notmuch", "default")
+	if err := os.MkdirAll(defaultProfileDir, 0700); err != nil {
+		t.Fatalf("MkdirAll(%s): unexpected error: %s", defaultProfileDir, err)
+	}
+
+	// "Test" profile
+	testProfile := "testProfile"
+	testProfileDir := path.Join(tmpDir, "notmuch", testProfile)
+	if err := os.MkdirAll(testProfileDir, 0700); err != nil {
+		t.Fatalf("MkdirAll(%s): unexpected error: %s", testProfileDir, err)
+	}
+
+	for _, dir := range []string{testProfileDir, defaultProfileDir, tmpDir} {
+		config, err := os.Create(path.Join(dir, "config"))
+		if err != nil {
+			t.Fatalf("CreateTemp(%s): unexpected error: %s", dir, err)
+		}
+		defer config.Close()
+		if _, err := config.WriteString(fmt.Sprintf("[database]\npath=%s\n", dbPath)); err != nil {
+			t.Fatalf("WriteString(%q): unexpected error: %s", config.Name(), err)
+		}
+	}
+
+	configPath := path.Join(tmpDir, "config")
+	badPath := "/nowherexyz73"
+	badProfile := "nowherexyz13"
+
+	type args struct {
+		path     *string
+		config   *string
+		profile  *string
+		xdg_home *string
+		mode     DBMode
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "with default profile",
+			args: args{
+				mode:     DBReadOnly,
+				xdg_home: &tmpDir,
+			},
+		},
+		{
+			name: "with custom profile",
+			args: args{
+				mode:     DBReadOnly,
+				profile:  &testProfile,
+				xdg_home: &tmpDir,
+			},
+		},
+		{
+			name: "with config file",
+			args: args{
+				path:   nil,
+				config: &configPath,
+				mode:   DBReadOnly,
+			},
+		},
+		{
+			name: "with db path only",
+			args: args{
+				path: &dbPath,
+				mode: DBReadOnly,
+			},
+		},
+		{
+			name: "with non-existent config file",
+			args: args{
+				config: &badPath,
+			},
+			wantErr: true,
+		},
+		{
+			name: "with non-existent path",
+			args: args{
+				path: &badPath,
+			},
+			wantErr: true,
+		},
+		{
+			name: "with non-existent profile",
+			args: args{
+				profile:  &badProfile,
+				xdg_home: &tmpDir,
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.args.xdg_home != nil {
+				os.Setenv("XDG_CONFIG_HOME", *tt.args.xdg_home)
+				defer os.Unsetenv("XDG_CONFIG_HOME")
+			}
+
+			db, err := OpenWithConfig(tt.args.path, tt.args.config, tt.args.profile, tt.args.mode)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("OpenWithConfig() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if !tt.wantErr {
+				if want, got := 1, db.Version(); got < want {
+					t.Errorf("db.Version(): want at least %d got %d", want, got)
+				}
+			}
+		})
+	}
+}

@@ -60,14 +60,65 @@ func Create(path string) (*DB, error) {
 // Open opens the database at the location path using mode. Caller is responsible
 // for closing the database when done.
 func Open(path string, mode DBMode) (*DB, error) {
-	cpath := C.CString(path)
-	defer C.free(unsafe.Pointer(cpath))
+	config := ""
+	return OpenWithConfig(&path, &config, nil, mode)
+}
+
+// OpenWithConfig opens the database at the location 'path' using 'mode' and
+// the configuration in 'config'.
+//
+// If 'path' is nil, use the location specified:
+//  - in the environment variable $NOTMUCH_DATABASE, if non-empty
+//  - in a configuration file, located as described in 'config'
+//  - by $XDG_DATA_HOME/notmuch/<profile>, if profile argument is set
+//
+// If 'path' is non-nil, but does not appear to be a Xapian database, check
+// for a directory '.notmuch/xapian' below 'path'.
+//
+// If 'config' is nil, it will look:
+//  - the environment variable $NOTMUCH_CONFIG, if non-empty
+//  - $XDG_CONFIG_HOME/notmuch
+//  - $HOME/.notmuch-config
+//
+// If 'config' is an empty string (""), then it will not open any configuration
+// file.
+//
+// If 'profile' is nil, it will use:
+//	 - the environment variable $NOTMUCH_PROFILE if defined
+//   - otherwise 'default' for directories, and '' for paths
+//
+// If 'profile' is non-nil, append to the directory / file path determined
+// for 'config' and 'path'.
+//
+// Caller is responsible for closing the database when done.
+func OpenWithConfig(path, config, profile *string, mode DBMode) (*DB, error) {
+	var cpath *C.char
+	if path != nil {
+		cpath = C.CString(*path)
+		defer C.free(unsafe.Pointer(cpath))
+	}
+
+	var cconfig *C.char
+	if config != nil {
+		cconfig = C.CString(*config)
+		defer C.free(unsafe.Pointer(cconfig))
+	}
+
+	var cprofile *C.char
+	if profile != nil {
+		cprofile = C.CString(*profile)
+		defer C.free(unsafe.Pointer(cprofile))
+	}
+
+	var errMsg string
+	cErrMsg := C.CString(errMsg)
+	defer C.free(unsafe.Pointer(cErrMsg))
 
 	cmode := C.notmuch_database_mode_t(mode)
 	var cdb *C.notmuch_database_t
 	cdbptr := (**C.notmuch_database_t)(&cdb)
-	err := statusErr(C.notmuch_database_open(cpath, cmode, cdbptr))
-	if err != nil {
+	err := statusErr(C.notmuch_database_open_with_config(cpath, cmode, cconfig, cprofile, cdbptr, &cErrMsg))
+	if err != nil || errMsg != "" {
 		return nil, err
 	}
 	db := &DB{cptr: unsafe.Pointer(cdb)}
